@@ -409,34 +409,136 @@ function init(name,pos,nat){
 }
 
 // Gera calendário da temporada
+// Copas nacionais por liga
+const CUPS={
+  serieC:{copa:'Copa do Brasil',intl:null,intl2:null},
+  serieB:{copa:'Copa do Brasil',intl:null,intl2:null},
+  serieA:{copa:'Copa do Brasil',intl:'Libertadores',intl2:'Sulamericana'},
+  argentina:{copa:'Copa Argentina',intl:'Libertadores',intl2:'Sulamericana'},
+  portugal:{copa:'Taça de Portugal',intl:'Champions League',intl2:'Liga Europa'},
+  ligue1:{copa:'Coupe de France',intl:'Champions League',intl2:'Liga Europa'},
+  serieA_ita:{copa:'Coppa Italia',intl:'Champions League',intl2:'Liga Europa'},
+  laliga:{copa:'Copa del Rey',intl:'Champions League',intl2:'Liga Europa'},
+  premier:{copa:'FA Cup',intl:'Champions League',intl2:'Liga Europa'}
+};
+
+// Times famosos por competição continental
+const CONTINENTAL_TEAMS={
+  libertadores:['Flamengo','Palmeiras','River Plate','Boca Juniors','Atlético-MG','São Paulo','Grêmio','Internacional','Peñarol','Nacional-URU','Olimpia','Cerro Porteño','LDU','Colo-Colo','Corinthians','Santos'],
+  sulamericana:['Fortaleza','Athletico-PR','Ceará','Goiás','Independiente','Lanús','Defensa y J.','Colón','Melgar','Deportivo Cali','Junior','Caracas'],
+  champions:['Real Madrid','Barcelona','Man City','Bayern Munich','PSG','Liverpool','Chelsea','Juventus','Inter','Milan','Napoli','Benfica','Porto','Dortmund','Arsenal','Atlético'],
+  europa:['Roma','Lazio','Sevilla','Villarreal','Braga','Fiorentina','Rennes','Lens','West Ham','Brighton','Atalanta','Feyenoord','Ajax','Olympiacos','Fenerbahçe']
+};
+
+const SA_TEAMS=['Argentina','Uruguai','Colômbia','Chile','Paraguai','Equador','Peru','Venezuela','Bolívia'];
+const WORLD_TEAMS=['Alemanha','França','Espanha','Inglaterra','Holanda','Bélgica','Portugal','Itália','Croácia','Japão','Coreia do Sul','México','EUA','Marrocos','Senegal','Camarões','Austrália','Canadá','Suíça','Dinamarca'];
+
 function genCalendar(){
   G.calendar=[];
   const teams=LEAGUES[G.lk].teams;
   const myIdx=teams.findIndex(t=>t.n===G.p.club);
-  for(let w=1;w<=38;w++){
-    const oppIdx=(myIdx+w)%teams.length;
-    if(oppIdx===myIdx)continue;
+  const cups=CUPS[G.lk]||{copa:'Copa Nacional',intl:null,intl2:null};
+  const bigTeams=['Flamengo','Palmeiras','Corinthians','São Paulo','Vasco','Botafogo','Grêmio','Internacional','Cruzeiro','Atlético-MG','Santos','River Plate','Boca Juniors','Real Madrid','Barcelona','Man City','Liverpool','Juventus','Inter','Milan','PSG','Benfica','Porto'];
+
+  // Liga — jogos a cada 1-2 semanas
+  const leagueWeeks=[];
+  for(let w=1;w<=38;w++){if(w%1===0)leagueWeeks.push(w)} // todas semanas podem ter jogo
+  leagueWeeks.forEach((w,i)=>{
+    const oppIdx=(myIdx+i+1)%teams.length;
+    if(oppIdx===myIdx)return;
     const opp=teams[oppIdx];
-    const home=w%2===0;
-    const isClassico=['Flamengo','Palmeiras','Corinthians','São Paulo','Vasco','Botafogo','Grêmio','Internacional','Cruzeiro','Atlético-MG','Santos','River Plate','Boca Juniors','Real Madrid','Barcelona','Man City','Liverpool','Juventus','Inter','Milan','PSG','Benfica','Porto'].includes(opp.n);
-    G.calendar.push({week:w,opp:opp.n,oppS:opp.s,home,classico:isClassico,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+    G.calendar.push({week:w,comp:'liga',compName:LEAGUES[G.lk].name,opp:opp.n,oppS:opp.s,home:w%2===0,classico:bigTeams.includes(opp.n),played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+  });
+
+  // Copa Nacional — fases eliminatórias
+  const copaRounds=[
+    {week:4,fase:'1ª Fase',oppS:R(25,45)},
+    {week:8,fase:'2ª Fase',oppS:R(30,50)},
+    {week:14,fase:'Oitavas',oppS:R(40,60)},
+    {week:20,fase:'Quartas',oppS:R(50,70)},
+    {week:28,fase:'Semi',oppS:R(60,80)},
+    {week:34,fase:'FINAL',oppS:R(65,85)},
+  ];
+  if(!G._copaElim)G._copaElim=false;
+  copaRounds.forEach(r=>{
+    const oppTeam=pick(LEAGUES[G.lk].teams.filter(t=>t.n!==G.p.club));
+    G.calendar.push({week:r.week,comp:'copa',compName:cups.copa,opp:oppTeam?oppTeam.n:'Adversário',oppS:r.oppS,home:R(0,1)===0,classico:false,fase:r.fase,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+  });
+
+  // Continental — Libertadores/Champions ou Sulamericana/Europa League
+  // Só se o time tem prestígio suficiente (top 8 da liga = intl principal, top 12 = intl2)
+  const teamRank=teams.slice().sort((a,b)=>b.s-a.s).findIndex(t=>t.n===G.p.club)+1;
+  let contComp=null,contTeams=[];
+  if(teamRank<=6&&cups.intl){
+    contComp=cups.intl;
+    contTeams=cups.intl==='Libertadores'?CONTINENTAL_TEAMS.libertadores:CONTINENTAL_TEAMS.champions;
+  } else if(teamRank<=12&&cups.intl2){
+    contComp=cups.intl2;
+    contTeams=cups.intl2==='Sulamericana'?CONTINENTAL_TEAMS.sulamericana:CONTINENTAL_TEAMS.europa;
   }
-  // Janela de transferência: semana 19 (meio ano) e 38 (fim)
+
+  if(contComp){
+    G._continental=contComp;
+    // Fase de grupos: semanas 6, 10, 12, 16, 18, 22
+    const groupWeeks=[6,10,12,16,18,22];
+    groupWeeks.forEach((w,i)=>{
+      const opp=pick(contTeams.filter(t=>t!==G.p.club));
+      G.calendar.push({week:w,comp:'continental',compName:contComp,opp,oppS:R(55,85),home:i%2===0,classico:true,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+    });
+    // Mata-mata: oitavas s24, quartas s28, semi s32, final s36
+    [{week:24,fase:'Oitavas'},{week:29,fase:'Quartas'},{week:33,fase:'Semi'},{week:37,fase:'FINAL'}].forEach(r=>{
+      const opp=pick(contTeams.filter(t=>t!==G.p.club));
+      G.calendar.push({week:r.week,comp:'continental',compName:contComp,opp,oppS:R(65,90),home:R(0,1)===0,classico:true,fase:r.fase,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+    });
+  }
+
+  // Ordenar por semana
+  G.calendar.sort((a,b)=>a.week-b.week);
   G.transferWindow=false;
-  // Seleção
   genSelCalendar();
 }
 
 function genSelCalendar(){
   G.selCalendar=[];
-  if(G.p.nat!=='Brasil'||G.p.age>23)return;
-  const cat=G.p.age<=17?'Sub-17':G.p.age<=20?'Sub-20':'Sub-23';
-  // Datas FIFA: semanas 8, 16, 24, 32
-  [8,16,24,32].forEach(w=>{
-    if(G.p.reputation>=25+w){
-      G.selCalendar.push({week:w,cat,opp:pick(['Argentina','Uruguai','Colômbia','Chile','Paraguai','Equador','Peru','Venezuela','México','EUA']),played:false});
-    }
-  });
+  if(G.p.nat!=='Brasil')return;
+  const rep=G.p.reputation;
+
+  // Categoria por idade
+  const cat=G.p.age<=17?'Sub-17':G.p.age<=20?'Sub-20':G.p.age<=23?'Sub-23':'Principal';
+
+  // Datas FIFA — amistosos/eliminatórias
+  if(rep>=25){
+    [8,16,24,32].forEach(w=>{
+      if(rep>=20+w/2){
+        G.selCalendar.push({week:w,cat,comp:'Eliminatórias',opp:pick(SA_TEAMS),played:false,type:'elim'});
+      }
+    });
+  }
+
+  // Copa América — a cada 2 temporadas (temporada par)
+  if(G.season%2===0&&rep>=40){
+    const caTeams=SA_TEAMS.filter(t=>t!=='Brasil');
+    [{week:25,fase:'Grupo',opp:pick(caTeams)},{week:26,fase:'Grupo',opp:pick(caTeams)},{week:27,fase:'Grupo',opp:pick(caTeams)},
+     {week:30,fase:'Quartas',opp:pick(caTeams)},{week:32,fase:'Semi',opp:pick(caTeams)},{week:35,fase:'FINAL',opp:pick([...caTeams,...['México','EUA']])}
+    ].forEach(m=>{
+      G.selCalendar.push({week:m.week,cat:cat==='Principal'?'Principal':cat,comp:'Copa América',opp:m.opp,fase:m.fase,played:false,type:'copa_america'});
+    });
+    G.news.unshift({headline:`🏆 ${G.p.name} convocado para a Copa América!`,body:`Seleção ${cat} disputará o torneio continental.`,hot:true});
+  }
+
+  // Copa do Mundo — a cada 4 temporadas (temporada divisível por 4)
+  if(G.season%4===0&&rep>=55){
+    const wmTeams=WORLD_TEAMS;
+    [{week:26,fase:'Grupo',opp:pick(wmTeams)},{week:27,fase:'Grupo',opp:pick(wmTeams)},{week:28,fase:'Grupo',opp:pick(wmTeams)},
+     {week:30,fase:'Oitavas',opp:pick(wmTeams)},{week:32,fase:'Quartas',opp:pick(wmTeams)},
+     {week:34,fase:'Semi',opp:pick(wmTeams)},{week:36,fase:'FINAL',opp:pick(wmTeams)}
+    ].forEach(m=>{
+      G.selCalendar.push({week:m.week,cat:'Principal',comp:'Copa do Mundo',opp:m.opp,fase:m.fase,played:false,type:'world_cup'});
+    });
+    checkAch('selA');
+    G.news.unshift({headline:`🏆🇧🇷 ${G.p.name} convocado para a COPA DO MUNDO!`,body:`O craque do ${G.p.club} estará na seleção principal!`,hot:true});
+    log('Convocado para a Copa do Mundo!');notify('🏆🇧🇷 Copa do Mundo!','ok');
+  }
 }
 
 function genT(k,pc){return LEAGUES[k].teams.map(t=>({n:t.n,s:t.s,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0,me:t.n===pc,topScorer:pick(['Silva','Santos','Oliveira','Costa','Souza','Pereira','Almeida','Lima','Fernandes','Ribeiro']),topGoals:0}))}
@@ -1525,21 +1627,32 @@ function rCalendar(el){
   if(!G.calendar||G.calendar.length===0)genCalendar();
   const lg=LEAGUES[G.lk];
   const windowOpen=isTransferWindowOpen();
-  el.innerHTML=`<div class="card"><h3>📅 Calendário — ${lg.name} T${G.season}</h3>
-    <div style="font-size:.82rem;color:#aaa;margin-bottom:12px">
-      Camisa: <b style="color:var(--gold)">#${G.shirtNumber}</b> ${G.captain?'| ©️ <b style="color:var(--gold)">CAPITÃO</b>':''} ${G.fkTaker?'| 🎯 Cobrador de Falta':''} ${G.pkTaker?'| ⚽ Cobrador de Pênalti':''}
-      <br>Janela de transferência: <b style="color:${windowOpen?'var(--green)':'var(--red)}'}">${windowOpen?'ABERTA':'FECHADA'}</b> ${!windowOpen?'(abre sem. 17-19 mesma liga / sem. 36-38 todas)':''}
+  const compColors={liga:'#3498db',copa:'#e67e22',continental:'#9b59b6'};
+  const compIcons={liga:'🏟️',copa:'🏆',continental:'🌍'};
+  el.innerHTML=`<div class="card"><h3>📅 Calendário — T${G.season}</h3>
+    <div style="font-size:.82rem;color:#aaa;margin-bottom:8px">
+      👕 #${G.shirtNumber} ${G.captain?'| ©️ CAPITÃO':''} ${G.fkTaker?'| 🎯 Falta':''} ${G.pkTaker?'| ⚽ Pênalti':''}
+      | Janela: <b style="color:${windowOpen?'var(--green)':'var(--red)'}">${windowOpen?'ABERTA':'FECHADA'}</b>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;font-size:.75rem;flex-wrap:wrap">
+      <span style="color:#3498db">● Liga</span>
+      <span style="color:#e67e22">● Copa</span>
+      ${G._continental?`<span style="color:#9b59b6">● ${G._continental}</span>`:''}
     </div>
     <div style="max-height:450px;overflow-y:auto">
-    ${G.calendar.map((m,i)=>{
-      const isCurrent=m.week===G.week;
+    ${G.calendar.map(m=>{
+      const isCur=m.week===G.week;
       const isPast=m.week<G.week;
-      const bg=isCurrent?'rgba(226,183,20,.15)':isPast?'rgba(255,255,255,.02)':'transparent';
-      const border=isCurrent?'var(--gold)':'var(--brd)';
-      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid ${border};background:${bg};margin-bottom:4px;font-size:.85rem">
-        <div style="width:40px;font-family:'Oswald';color:${isCurrent?'var(--gold)':'#888'}">S${m.week}</div>
-        <div style="flex:1">${m.home?'🏟️':'✈️'} ${m.home?'vs':'@'} <b style="color:${m.classico?'var(--gold)':'#ddd'}">${m.opp}</b> ${m.classico?'⭐':''}</div>
-        <div style="width:80px;text-align:right">${m.played?`<span style="color:${m.result==='V'?'var(--green)':m.result==='D'?'var(--red)':'var(--orange)'}">${m.result}</span> ⚽${m.playerGoals} 🎯${m.playerAssists} <span style="color:var(--gold)">${m.rating.toFixed(1)}</span>`:(isCurrent?'<b style="color:var(--gold)">HOJE</b>':'—')}</div>
+      const cc=compColors[m.comp]||'#888';
+      const ci=compIcons[m.comp]||'📋';
+      return`<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-left:3px solid ${cc};border-bottom:1px solid rgba(255,255,255,.05);background:${isCur?'rgba(226,183,20,.12)':'transparent'};font-size:.82rem">
+        <div style="width:32px;font-family:'Oswald';color:${isCur?'var(--gold)':'#666'};font-size:.75rem">S${m.week}</div>
+        <div style="width:18px;text-align:center">${m.comp==='continental'?'🌍':m.comp==='copa'?'🏆':'⚽'}</div>
+        <div style="flex:1;min-width:0">
+          <div style="color:${cc};font-size:.7rem;font-family:'Oswald'">${m.compName}${m.fase?' — '+m.fase:''}</div>
+          <div>${m.home?'🏟️':'✈️'} <b style="color:${m.classico?'var(--gold)':'#ccc'}">${m.opp}</b>${m.classico?' ⭐':''}</div>
+        </div>
+        <div style="width:70px;text-align:right;font-size:.78rem">${m.played?`<span style="color:${m.result==='V'?'var(--green)':m.result==='D'?'var(--red)':'var(--orange)'}">${m.result}</span> ${m.playerGoals}G ${m.playerAssists}A`:(isCur?'<b style="color:var(--gold)">HOJE</b>':'')}</div>
       </div>`}).join('')}
     </div></div>`;
 }
@@ -1548,20 +1661,40 @@ function rCalendar(el){
 function rSelection(el){
   const p=G.p;
   const cat=p.age<=17?'Sub-17':p.age<=20?'Sub-20':p.age<=23?'Sub-23':'Principal';
-  const eligible=p.nat==='Brasil'&&p.reputation>=25;
-  el.innerHTML=`<div class="card"><h3>🇧🇷 Seleção Brasileira — ${cat}</h3>
-    ${!eligible?'<p style="color:#666">Você precisa de reputação 25+ e ser brasileiro para ser convocado.</p>':`
-    <p style="color:#aaa;font-size:.88rem">Status: ${G.selCalendar.length>0?'<b style="color:var(--green)">Convocado</b>':'<b style="color:#888">Aguardando convocação</b>'}</p>
-    <div style="margin-top:12px;max-height:300px;overflow-y:auto">
+  const eligible=p.nat==='Brasil';
+  const compColors={elim:'#3498db',copa_america:'#f1c40f',world_cup:'#e74c3c'};
+  const compIcons={elim:'🇧🇷',copa_america:'🏆',world_cup:'🌍🏆'};
+  const hasWC=G.selCalendar.some(m=>m.type==='world_cup');
+  const hasCA=G.selCalendar.some(m=>m.type==='copa_america');
+
+  el.innerHTML=`<div class="card"><h3>🇧🇷 Seleção Brasileira ${cat==='Principal'?'':'— '+cat}</h3>
+    ${!eligible?'<p style="color:#666">Apenas jogadores brasileiros podem ser convocados.</p>':`
+    <div style="font-size:.85rem;color:#aaa;margin-bottom:10px">
+      Reputação: <b style="color:var(--gold)">${p.reputation}/100</b> | Categoria: <b style="color:var(--gold)">${cat}</b>
+      ${p.reputation<25?' | <span style="color:var(--red)">Precisa de 25+ para ser convocado</span>':''}
+    </div>
+    ${hasWC?'<div style="background:rgba(231,76,60,.15);border:1px solid var(--red);padding:10px;margin-bottom:10px;text-align:center;font-family:Oswald;color:var(--gold);font-size:1.1rem">🌍🏆 COPA DO MUNDO — CONVOCADO!</div>':''}
+    ${hasCA?'<div style="background:rgba(241,196,0,.1);border:1px solid #f1c40f;padding:10px;margin-bottom:10px;text-align:center;font-family:Oswald;color:var(--gold);font-size:1rem">🏆 COPA AMÉRICA — CONVOCADO!</div>':''}
+    <div style="display:flex;gap:8px;margin-bottom:8px;font-size:.72rem">
+      <span style="color:#3498db">● Eliminatórias</span>
+      <span style="color:#f1c40f">● Copa América</span>
+      <span style="color:#e74c3c">● Copa do Mundo</span>
+    </div>
+    <div style="max-height:350px;overflow-y:auto">
     ${G.selCalendar.length>0?G.selCalendar.map(m=>{
-      const isPast=m.week<G.week;
-      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--brd);margin-bottom:4px;font-size:.85rem;background:${m.week===G.week?'rgba(226,183,20,.15)':'transparent'}">
-        <div style="font-family:'Oswald';color:var(--gold);width:40px">S${m.week}</div>
-        <div style="flex:1">🇧🇷 Brasil ${cat} vs ${m.opp}</div>
-        <div>${m.played?'✅ Jogou':'—'}</div>
-      </div>`}).join(''):'<p style="color:#666;font-size:.85rem">Sem jogos agendados. Continue evoluindo!</p>'}
+      const cc=compColors[m.type]||'#888';
+      const ci=compIcons[m.type]||'🇧🇷';
+      const isCur=m.week===G.week;
+      return`<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-left:3px solid ${cc};border-bottom:1px solid rgba(255,255,255,.05);background:${isCur?'rgba(226,183,20,.12)':'transparent'};font-size:.82rem">
+        <div style="width:32px;font-family:'Oswald';color:${isCur?'var(--gold)':'#666'};font-size:.75rem">S${m.week}</div>
+        <div style="flex:1">
+          <div style="color:${cc};font-size:.7rem;font-family:'Oswald'">${m.comp}${m.fase?' — '+m.fase:''}</div>
+          <div>${ci} Brasil vs <b>${m.opp}</b></div>
+        </div>
+        <div style="font-size:.78rem">${m.played?'✅':'${isCur?"<b style=\\"color:var(--gold)\\">HOJE</b>":""}'}</div>
+      </div>`}).join(''):'<p style="color:#666;font-size:.85rem">Sem convocação esta temporada. Jogue bem para chamar atenção do técnico!</p>'}
     </div>`}
-    <h4 style="color:var(--gold);margin:16px 0 8px">Histórico de Convocações</h4>
+    <h4 style="color:var(--gold);margin:16px 0 8px">Histórico</h4>
     <div style="font-size:.82rem;color:#aaa">${Object.entries(p.youthCaps||{}).map(([age,cat])=>`<div>Idade ${age}: ${cat}</div>`).join('')||'Nenhuma convocação ainda.'}</div>
   </div>`;
 }
