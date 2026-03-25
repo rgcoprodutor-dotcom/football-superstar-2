@@ -112,7 +112,34 @@ h1,h2,h3,h4{font-family:'Oswald',sans-serif;text-transform:uppercase}
 .nickname{background:linear-gradient(90deg,var(--gold),#f5d442);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
 .starter-badge{display:inline-block;padding:2px 8px;font-size:.7rem;font-family:'Oswald',sans-serif;border-radius:3px;margin-left:6px}
 .starter-badge.titular{background:var(--green);color:#000}.starter-badge.reserva{background:var(--orange);color:#000}
-@media(max-width:768px){.side{display:none}.topbar{flex-direction:column;text-align:center}.badges{justify-content:center}#title-screen h1{font-size:2.2rem}.posg{grid-template-columns:repeat(2,1fr)}}
+/* Mobile bottom nav */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--pri);border-top:2px solid var(--brd);z-index:900;padding:4px 0}
+.mob-nav-scroll{display:flex;overflow-x:auto;gap:2px;padding:2px 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.mob-nav-scroll::-webkit-scrollbar{display:none}
+.mob-btn{flex:0 0 auto;padding:6px 12px;text-align:center;cursor:pointer;border-radius:6px;transition:all .2s;min-width:56px}
+.mob-btn .mic{font-size:1.2rem}
+.mob-btn .mlb{font-size:.6rem;color:#888;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.mob-btn.act{background:rgba(226,183,20,.15)}.mob-btn.act .mlb{color:var(--gold)}
+.mob-btn:active{background:rgba(226,183,20,.2)}
+.mob-top{display:none;position:fixed;top:0;left:0;right:0;background:var(--pri);border-bottom:2px solid var(--brd);z-index:900;padding:6px 12px;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between}
+.mob-top .mt-name{font-family:'Oswald',sans-serif;color:var(--gold);font-size:1rem}
+.mob-top .mt-info{font-size:.72rem;color:#aaa}
+.mob-top .mt-btns{display:flex;gap:4px}
+.mob-top .mt-btn{padding:4px 10px;font-size:.7rem;font-family:'Oswald',sans-serif;border:1px solid var(--brd);background:transparent;color:var(--gold);cursor:pointer}
+
+@media(max-width:768px){
+  .side{display:none}
+  .topbar{display:none!important}
+  .mob-nav{display:block}
+  .mob-top{display:flex}
+  .ca{padding:10px 8px;max-height:calc(100vh - 110px);margin-top:52px;margin-bottom:50px}
+  .main{flex-direction:column}
+  #title-screen h1{font-size:2.2rem}
+  .posg{grid-template-columns:repeat(2,1fr)}
+  .cg{grid-template-columns:1fr}
+  .mab{min-width:auto}
+  .card{padding:14px}
+}
 </style>
 </head>
 <body>
@@ -168,6 +195,21 @@ h1,h2,h3,h4{font-family:'Oswald',sans-serif;text-transform:uppercase}
   <div class="main">
     <div class="side" id="sidebar"></div>
     <div class="ca" id="ca"></div>
+  </div>
+  <!-- MOBILE TOP BAR -->
+  <div class="mob-top" id="mob-top">
+    <div>
+      <div class="mt-name" id="mt-name">Jogador</div>
+      <div class="mt-info" id="mt-info">ATA | 16a | ⭐45 | 💰R$0</div>
+    </div>
+    <div class="mt-btns">
+      <button class="mt-btn" onclick="saveGame()">💾</button>
+      <button class="mt-btn" onclick="smartAdvance()">⏩</button>
+    </div>
+  </div>
+  <!-- MOBILE BOTTOM NAV -->
+  <div class="mob-nav" id="mob-nav">
+    <div class="mob-nav-scroll" id="mob-nav-scroll"></div>
   </div>
 </div>
 <div id="modal-container" class="hidden"></div>
@@ -468,9 +510,13 @@ document.querySelectorAll('.posbtn').forEach(b=>{b.addEventListener('click',()=>
 
 function startGame(){const n=$('pname').value.trim()||'Alex Silva';if(!selPos){notify('Selecione posição!','err');return}init(n,selPos,$('pnat').value);showScreen('game-screen');buildSidebar();updateHUD();switchTab('news')}
 
+const TABS=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['attributes','📊','Atributos'],['match','⚽','Jogo'],['league','🏆','Tabela'],['scorers','🥇','Artilh.'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
+
 function buildSidebar(){
-  const tabs=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['attributes','📊','Atributos'],['match','⚽','Jogo'],['league','🏆','Classificação'],['scorers','⚽','Artilharia'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
-  $('sidebar').innerHTML=tabs.map(([t,i,l])=>`<div class="ni${t==='news'?' act':''}" data-t="${t}" onclick="switchTab('${t}')"><span class="ic">${i}</span>${l}</div>`).join('');
+  $('sidebar').innerHTML=TABS.map(([t,i,l])=>`<div class="ni${t==='news'?' act':''}" data-t="${t}" onclick="switchTab('${t}')"><span class="ic">${i}</span>${l}</div>`).join('');
+  // Mobile bottom nav
+  const mnav=$('mob-nav-scroll');
+  if(mnav) mnav.innerHTML=TABS.map(([t,i,l])=>`<div class="mob-btn${t==='news'?' act':''}" data-t="${t}" onclick="switchTab('${t}')"><div class="mic">${i}</div><div class="mlb">${l}</div></div>`).join('');
 }
 
 function updateHUD(){
@@ -480,9 +526,23 @@ function updateHUD(){
   $('hmo').textContent=Math.round(G.p.morale);$('hf').textContent=ff(G.p.followers);
   $('ho').textContent=ovr();$('hs').textContent=`T${G.season}`;
   $('hw').textContent=`S${G.week}/${G.mw}`;$('hc').textContent=G.p.club;
+  // Mobile top bar
+  const mtn=$('mt-name');if(mtn)mtn.textContent=G.p.name+(G.p.nickname?' "'+G.p.nickname+'"':'');
+  const mti=$('mt-info');if(mti)mti.textContent=`${PL[G.p.pos]} | ${G.p.age}a | ⭐${ovr()} | 💰${fm(G.p.money)} | ⚡${Math.round(G.p.energy)}%`;
 }
 
-function switchTab(t){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));document.querySelector(`.ni[data-t="${t}"]`)?.classList.add('act');renderTab(t)}
+function switchTab(t){
+  // Desktop sidebar
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  document.querySelector(`.ni[data-t="${t}"]`)?.classList.add('act');
+  // Mobile bottom nav
+  document.querySelectorAll('.mob-btn').forEach(n=>n.classList.remove('act'));
+  document.querySelector(`.mob-btn[data-t="${t}"]`)?.classList.add('act');
+  // Scroll mobile nav to active tab
+  const activeBtn=document.querySelector(`.mob-btn[data-t="${t}"]`);
+  if(activeBtn)activeBtn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  renderTab(t);
+}
 function renderTab(t){const m={dashboard:rDash,actions:rActions,attributes:rAttrs,match:rMatch,news:rNews,league:rLeague,scorers:rScorers,transfers:rTransfers,agent:rAgent,relationships:rRels,finances:rFin,shop:rShop,achievements:rAchs};if(m[t])m[t]($('ca'))}
 function actionsLeft(){return G.wa-Object.values(G.au).filter(v=>v).length}
 
