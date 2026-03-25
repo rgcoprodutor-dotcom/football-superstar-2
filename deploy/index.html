@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Superstar 2</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap');
+:root{--pri:#1a1a2e;--sec:#16213e;--gold:#e2b714;--green:#2ecc71;--red:#e74c3c;--blue:#3498db;--orange:#f39c12;--dark:#0a0a15;--light:#eaeaea;--card:rgba(22,33,62,.92);--brd:rgba(226,183,20,.3)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Roboto',sans-serif;background:var(--dark);color:var(--light);min-height:100vh;overflow-x:hidden}
+h1,h2,h3,h4{font-family:'Oswald',sans-serif;text-transform:uppercase}
+.hidden{display:none!important}
+.screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#title-screen{background:linear-gradient(135deg,var(--pri),var(--dark),#0d1b2a);text-align:center}
+#title-screen h1{font-size:3.5rem;color:var(--gold);text-shadow:0 0 40px rgba(226,183,20,.4);margin-bottom:8px;letter-spacing:4px}
+#title-screen .sub{font-size:1.1rem;color:#888;margin-bottom:40px;letter-spacing:2px}
+.title-icon{font-size:5rem;margin-bottom:16px}
+.btn{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:2px;padding:12px 36px;border:2px solid var(--gold);background:transparent;color:var(--gold);font-size:1rem;cursor:pointer;transition:all .3s;margin:6px}
+.btn:hover{background:var(--gold);color:var(--dark);transform:translateY(-2px);box-shadow:0 4px 16px rgba(226,183,20,.3)}
+.btn-sm{padding:7px 18px;font-size:.82rem}
+.btn-g{border-color:var(--green);color:var(--green)}.btn-g:hover{background:var(--green);color:var(--dark)}
+.btn-r{border-color:var(--red);color:var(--red)}.btn-r:hover{background:var(--red);color:#fff}
+.btn-b{border-color:var(--blue);color:var(--blue)}.btn-b:hover{background:var(--blue);color:#fff}
+#creation-screen{background:linear-gradient(180deg,var(--pri),var(--dark))}
+.cre{max-width:680px;width:100%}.cre h2{text-align:center;color:var(--gold);font-size:1.8rem;margin-bottom:24px}
+.fg{margin-bottom:18px}.fg label{display:block;color:var(--gold);font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-size:.85rem}
+.fg input,.fg select{width:100%;padding:10px 14px;background:var(--sec);border:1px solid var(--brd);color:var(--light);font-size:1rem;outline:none}
+.fg input:focus,.fg select:focus{border-color:var(--gold)}
+.posg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.posbtn{padding:10px;background:var(--sec);border:2px solid var(--brd);color:var(--light);font-family:'Oswald',sans-serif;text-transform:uppercase;cursor:pointer;transition:all .3s;text-align:center;font-size:.8rem}
+.posbtn:hover{border-color:var(--gold);color:var(--gold)}.posbtn.sel{background:var(--gold);color:var(--dark);border-color:var(--gold)}
+#game-screen{min-height:100vh;display:flex;flex-direction:column;background:var(--dark);padding:0;justify-content:flex-start}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;background:var(--pri);border-bottom:2px solid var(--brd);flex-wrap:wrap;gap:8px}
+.topbar .pn{font-family:'Oswald',sans-serif;font-size:1.2rem;color:var(--gold)}
+.topbar .pm{font-size:.8rem;color:#aaa}
+.topbar .wi{text-align:right}.topbar .wi .sn{font-family:'Oswald',sans-serif;color:var(--gold);font-size:1rem}
+.badges{display:flex;gap:10px;flex-wrap:wrap}
+.badge{background:var(--sec);padding:5px 12px;border:1px solid var(--brd);font-size:.78rem;display:flex;align-items:center;gap:5px}
+.badge .l{color:#888}.badge .v{color:var(--gold);font-weight:700}
+.main{display:flex;flex:1;overflow:hidden}
+.side{width:200px;background:var(--pri);border-right:1px solid var(--brd);padding:12px 0;overflow-y:auto}
+.ni{padding:10px 20px;cursor:pointer;transition:all .2s;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:1px;font-size:.82rem;color:#999;border-left:3px solid transparent}
+.ni:hover{color:var(--light);background:rgba(255,255,255,.03)}
+.ni.act{color:var(--gold);border-left-color:var(--gold);background:rgba(226,183,20,.05)}
+.ni .ic{margin-right:8px}
+.ca{flex:1;padding:20px;overflow-y:auto;max-height:calc(100vh - 62px)}
+.card{background:var(--card);border:1px solid var(--brd);padding:20px;margin-bottom:16px}
+.card h3{color:var(--gold);margin-bottom:14px;font-size:1.1rem;letter-spacing:1px}
+.cg{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.ar{display:flex;justify-content:space-between;align-items:center;padding:5px 0}.an{font-size:.82rem;color:#bbb}
+.abc{width:110px;height:7px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden}
+.ab{height:100%;border-radius:4px;transition:width .5s}
+.av{font-family:'Oswald',sans-serif;font-size:.9rem;width:32px;text-align:right}
+.mh{text-align:center;padding:18px;background:var(--sec);border:1px solid var(--brd);margin-bottom:16px}
+.mh .tms{display:flex;justify-content:center;align-items:center;gap:24px;margin:8px 0}
+.mh .tn{font-family:'Oswald',sans-serif;font-size:1.3rem}
+.mh .sc{font-family:'Oswald',sans-serif;font-size:2.8rem;color:var(--gold)}
+.ml{background:var(--sec);border:1px solid var(--brd);padding:14px;max-height:350px;overflow-y:auto;font-size:.85rem;line-height:1.7}
+.ml .goal{color:var(--green);font-weight:700}.ml .miss{color:var(--red)}.ml .action{color:var(--blue)}.ml .event{color:var(--orange)}.ml .scout{color:#e0a0ff;font-style:italic}
+.pitch{background:linear-gradient(180deg,#1a472a,#2d6b3f,#1a472a);border:2px solid #fff3;padding:18px;text-align:center;margin:10px 0;border-radius:8px;min-height:100px}
+.pitch .sit{font-size:1.05rem;color:#fff;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.pitch .ctx{font-size:.82rem;color:#cfc;opacity:.8}
+.mab{padding:10px 14px;background:var(--sec);border:2px solid var(--brd);color:var(--light);cursor:pointer;transition:all .25s;font-size:.88rem;flex:1;min-width:200px;text-align:left;position:relative}
+.mab:hover{border-color:var(--gold);background:rgba(226,183,20,.1);color:var(--gold)}
+.mab .at{font-family:'Oswald',sans-serif;color:var(--gold);font-size:.92rem}
+.mab .ai{font-size:.72rem;color:#888;margin-top:2px}
+.mab .pct{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:'Oswald',sans-serif;font-size:1.1rem}
+.pct-h{color:var(--green)}.pct-m{color:var(--gold)}.pct-l{color:var(--red)}
+.suspense-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1500;flex-direction:column}
+.suspense-text{font-family:'Oswald',sans-serif;font-size:2rem;color:var(--gold);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+.suspense-result{font-size:1.3rem;margin-top:16px;opacity:0;transition:opacity .5s}
+.suspense-result.show{opacity:1}
+.news-item{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.85rem}
+.news-item .date{color:var(--gold);font-size:.75rem;font-family:'Oswald',sans-serif}
+.news-item .headline{color:#ddd;margin-top:2px}.news-item .body{color:#999;font-size:.78rem;margin-top:4px}
+.news-item.hot{border-left:3px solid var(--gold);padding-left:12px}
+.news-item.scout-news{border-left:3px solid #e0a0ff}
+.lt{width:100%;border-collapse:collapse}
+.lt th{font-family:'Oswald',sans-serif;text-transform:uppercase;color:var(--gold);padding:8px 6px;text-align:left;border-bottom:2px solid var(--brd);font-size:.8rem}
+.lt td{padding:6px;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
+.lt tr.pt{background:rgba(226,183,20,.08)}
+.rel-card{display:flex;align-items:center;gap:14px;background:var(--sec);border:1px solid var(--brd);padding:14px;margin-bottom:8px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal{background:var(--pri);border:2px solid var(--gold);max-width:620px;width:100%;padding:28px;max-height:90vh;overflow-y:auto}
+.modal h3{color:var(--gold);font-size:1.3rem;margin-bottom:14px}
+.modal p{line-height:1.6;margin-bottom:14px;color:#ccc}
+.modal .choices{display:flex;flex-direction:column;gap:8px}
+.modal .cb{padding:11px 18px;background:var(--sec);border:1px solid var(--brd);color:var(--light);cursor:pointer;text-align:left;transition:all .2s;font-size:.9rem}
+.modal .cb:hover{border-color:var(--gold);background:rgba(226,183,20,.1)}
+.notif{position:fixed;top:16px;right:16px;background:var(--sec);border:1px solid var(--gold);padding:14px 22px;z-index:2000;animation:slideIn .3s ease-out;max-width:340px;font-size:.9rem}
+.notif.ok{border-color:var(--green)}.notif.err{border-color:var(--red)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+.pbar{width:100%;height:9px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden;margin:3px 0}
+.pb{height:100%;border-radius:5px;transition:width .5s}
+.pb-e{background:linear-gradient(90deg,var(--red),var(--blue))}.pb-m{background:linear-gradient(90deg,var(--red),var(--orange),var(--green))}.pb-x{background:var(--gold)}
+.nickname{background:linear-gradient(90deg,var(--gold),#f5d442);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
+.starter-badge{display:inline-block;padding:2px 8px;font-size:.7rem;font-family:'Oswald',sans-serif;border-radius:3px;margin-left:6px}
+.starter-badge.titular{background:var(--green);color:#000}.starter-badge.reserva{background:var(--orange);color:#000}
+@media(max-width:768px){.side{display:none}.topbar{flex-direction:column;text-align:center}.badges{justify-content:center}#title-screen h1{font-size:2.2rem}.posg{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div id="title-screen" class="screen">
+  <div class="title-icon">⚽</div>
+  <h1>Football Superstar 2</h1>
+  <p class="sub">Da Base ao Estrelato Mundial</p>
+  <button class="btn" onclick="showScreen('creation-screen')">Nova Carreira</button>
+  <button class="btn btn-b" onclick="loadGame()" id="btn-load" style="display:none">📂 Abrir Carreira Salva</button>
+  <button class="btn btn-b btn-sm" onclick="loadFromFile()" id="btn-load-file" style="display:none">📁 Carregar Arquivo</button>
+</div>
+<div id="creation-screen" class="screen hidden">
+  <div class="cre">
+    <h2>Crie Seu Jogador</h2>
+    <div class="fg"><label>Nome</label><input type="text" id="pname" placeholder="Seu nome..." maxlength="30"></div>
+    <div class="fg"><label>Nacionalidade</label>
+      <select id="pnat"><option value="Brasil">Brasil</option><option value="Argentina">Argentina</option><option value="Colômbia">Colômbia</option><option value="Uruguai">Uruguai</option><option value="Portugal">Portugal</option><option value="Espanha">Espanha</option><option value="França">França</option><option value="Alemanha">Alemanha</option><option value="Inglaterra">Inglaterra</option><option value="Itália">Itália</option></select></div>
+    <div class="fg"><label>Posição</label>
+      <div class="posg" id="posg">
+        <div class="posbtn" data-p="GK">🧤 GOL<br><small>Goleiro</small></div>
+        <div class="posbtn" data-p="CB">🛡️ ZAG<br><small>Zagueiro</small></div>
+        <div class="posbtn" data-p="LB">🛡️ LE<br><small>Lat.Esq</small></div>
+        <div class="posbtn" data-p="RB">🛡️ LD<br><small>Lat.Dir</small></div>
+        <div class="posbtn" data-p="CDM">⚙️ VOL<br><small>Volante</small></div>
+        <div class="posbtn" data-p="CM">⚙️ MC<br><small>Meia</small></div>
+        <div class="posbtn" data-p="CAM">🎯 MEI<br><small>M.Atacante</small></div>
+        <div class="posbtn" data-p="LW">⚡ PE<br><small>Ponta Esq</small></div>
+        <div class="posbtn" data-p="RW">⚡ PD<br><small>Ponta Dir</small></div>
+        <div class="posbtn" data-p="ST">⚽ ATA<br><small>Atacante</small></div>
+        <div class="posbtn" data-p="CF">🎯 CA<br><small>Centroav.</small></div>
+        <div class="posbtn" data-p="SS">⚽ SA<br><small>2ºAtacante</small></div>
+      </div></div>
+    <div style="text-align:center;margin-top:24px"><button class="btn btn-g" onclick="startGame()">Iniciar Carreira</button></div>
+  </div>
+</div>
+<div id="game-screen" class="hidden">
+  <div class="topbar">
+    <div><div class="pn" id="hn">Jogador</div><div class="pm" id="hm">ATA | 16 | Nv1</div></div>
+    <div class="badges">
+      <div class="badge"><span class="l">💰</span><span class="v" id="h$">R$0</span></div>
+      <div class="badge"><span class="l">⚡</span><span class="v" id="he">100</span></div>
+      <div class="badge"><span class="l">😊</span><span class="v" id="hmo">75</span></div>
+      <div class="badge"><span class="l">📱</span><span class="v" id="hf">1K</span></div>
+      <div class="badge"><span class="l">⭐</span><span class="v" id="ho">45</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="wi" style="margin-right:12px"><div class="sn" id="hs">T1</div><div class="pm" id="hw">S1/38</div><div class="pm" id="hc">Clube</div></div>
+      <button class="btn btn-sm" onclick="saveGame()" title="Salvar (F5)">💾 Salvar</button>
+      <button class="btn btn-sm btn-b" onclick="saveAs()" title="Salvar Como">📋 Salvar Como</button>
+      <button class="btn btn-sm btn-g" onclick="smartAdvance()" title="Avançar">⏩ Avançar</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="side" id="sidebar"></div>
+    <div class="ca" id="ca"></div>
+  </div>
+</div>
+<div id="modal-container" class="hidden"></div>
+<div id="suspense-container" class="hidden"></div>
+<div id="notif-container"></div>
+<script>
+// =====================================================
+// FOOTBALL SUPERSTAR 2 — VERSÃO COMPLETA IMERSIVA
+// =====================================================
+const $=id=>document.getElementById(id);
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const pick=a=>a[R(0,a.length-1)];
+const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fm=n=>{if(n>=1e6)return'R$'+(n/1e6).toFixed(1)+'M';if(n>=1e3)return'R$'+(n/1e3).toFixed(0)+'K';return'R$'+n};
+const ff=n=>{if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(0)+'K';return''+n};
+
+const PL={GK:'GOL',CB:'ZAG',LB:'LE',RB:'LD',CDM:'VOL',CM:'MC',CAM:'MEI',LW:'PE',RW:'PD',CF:'CA',ST:'ATA',SS:'SA'};
+const AL={velocity:'Velocidade',strength:'Força',stamina:'Resistência',finishing:'Finalização',passing:'Passe',dribbling:'Drible',positioning:'Posicionamento',decisionMaking:'Decisão',composure:'Compostura',gameVision:'Visão de Jogo',bravery:'Coragem',charisma:'Carisma',publicImage:'Imagem',influence:'Influência',focus:'Foco',mediaManagement:'Mídia',financialStability:'Finanças',relationships:'Relações'};
+
+// ===== LIGAS =====
+const LEAGUES={
+serieC:{name:'Série C',country:'Brasil',tier:1,power:30,wage:400,teams:[
+  {n:'Remo',s:38},{n:'Paysandu',s:40},{n:'ABC',s:35},{n:'Ferroviário',s:34},{n:'Volta Redonda',s:36},{n:'Figueirense',s:39},{n:'Botafogo-SP',s:37},{n:'Londrina',s:38},{n:'São Bernardo',s:35},{n:'Tombense',s:36},{n:'Sampaio Corrêa',s:37},{n:'Náutico',s:40},{n:'CSA',s:38},{n:'Brusque',s:36},{n:'Athletic',s:34},{n:'Floresta',s:32},{n:'Ypiranga',s:34},{n:'Manaus',s:33},{n:'Confiança',s:34},{n:'América-RN',s:35}]},
+serieB:{name:'Série B',country:'Brasil',tier:2,power:45,wage:1500,teams:[
+  {n:'Sport',s:52},{n:'Ceará',s:50},{n:'Goiás',s:52},{n:'Coritiba',s:50},{n:'Ponte Preta',s:48},{n:'Guarani',s:46},{n:'Avaí',s:48},{n:'CRB',s:46},{n:'Vila Nova',s:47},{n:'Chapecoense',s:47},{n:'Operário-PR',s:45},{n:'Ituano',s:44},{n:'Novorizontino',s:46},{n:'Mirassol',s:48},{n:'Criciúma',s:49},{n:'Juventude',s:48},{n:'Amazonas',s:43},{n:'Botafogo-PB',s:44},{n:'Bragantino-PA',s:42},{n:'Paysandu',s:45}]},
+serieA:{name:'Série A',country:'Brasil',tier:3,power:65,wage:15000,teams:[
+  {n:'Palmeiras',s:80},{n:'Flamengo',s:78},{n:'Botafogo',s:74},{n:'São Paulo',s:72},{n:'Atlético-MG',s:72},{n:'Fluminense',s:70},{n:'Grêmio',s:72},{n:'Internacional',s:71},{n:'Corinthians',s:70},{n:'Santos',s:68},{n:'Vasco',s:66},{n:'Bahia',s:65},{n:'Fortaleza',s:68},{n:'Cruzeiro',s:70},{n:'Athletico-PR',s:67},{n:'RB Bragantino',s:64},{n:'Vitória',s:62},{n:'América-MG',s:60},{n:'Cuiabá',s:58},{n:'Atlético-GO',s:57}]},
+argentina:{name:'Liga Argentina',country:'Argentina',tier:4,power:68,wage:18000,teams:[
+  {n:'River Plate',s:79},{n:'Boca Juniors',s:78},{n:'Racing',s:70},{n:'Independiente',s:68},{n:'San Lorenzo',s:66},{n:'Vélez',s:65},{n:'Estudiantes',s:64},{n:'Lanús',s:63},{n:'Talleres',s:64},{n:'Newell\'s',s:62},{n:'Rosario Central',s:61},{n:'Huracán',s:60},{n:'Defensa y J.',s:62},{n:'Argentinos Jrs',s:60},{n:'Colón',s:58},{n:'Godoy Cruz',s:58},{n:'Banfield',s:57},{n:'Unión',s:56}]},
+portugal:{name:'Liga Portugal',country:'Portugal',tier:5,power:72,wage:30000,teams:[
+  {n:'Benfica',s:80},{n:'Porto',s:79},{n:'Sporting',s:78},{n:'Braga',s:72},{n:'Vitória SC',s:65},{n:'Famalicão',s:60},{n:'Casa Pia',s:57},{n:'Rio Ave',s:59},{n:'Boavista',s:58},{n:'Estoril',s:56},{n:'Gil Vicente',s:58},{n:'Arouca',s:55},{n:'Moreirense',s:55},{n:'Estrela',s:54},{n:'Vizela',s:53},{n:'Chaves',s:54},{n:'Portimonense',s:55},{n:'Marítimo',s:56}]},
+ligue1:{name:'Ligue 1',country:'França',tier:6,power:78,wage:60000,teams:[
+  {n:'PSG',s:90},{n:'Marseille',s:76},{n:'Monaco',s:75},{n:'Lyon',s:74},{n:'Lille',s:73},{n:'Lens',s:72},{n:'Nice',s:70},{n:'Rennes',s:70},{n:'Montpellier',s:65},{n:'Toulouse',s:63},{n:'Strasbourg',s:64},{n:'Nantes',s:63},{n:'Reims',s:62},{n:'Brest',s:64},{n:'Le Havre',s:58},{n:'Lorient',s:57},{n:'Metz',s:56},{n:'Clermont',s:55}]},
+serieA_ita:{name:'Serie A',country:'Itália',tier:7,power:82,wage:90000,teams:[
+  {n:'Inter',s:86},{n:'Juventus',s:84},{n:'Milan',s:82},{n:'Napoli',s:83},{n:'Roma',s:78},{n:'Atalanta',s:79},{n:'Lazio',s:76},{n:'Fiorentina',s:74},{n:'Bologna',s:72},{n:'Torino',s:68},{n:'Monza',s:62},{n:'Udinese',s:65},{n:'Sassuolo',s:63},{n:'Empoli',s:60},{n:'Lecce',s:59},{n:'Cagliari',s:60},{n:'Genoa',s:62},{n:'Verona',s:58}]},
+laliga:{name:'La Liga',country:'Espanha',tier:8,power:85,wage:120000,teams:[
+  {n:'Real Madrid',s:92},{n:'Barcelona',s:90},{n:'Atlético',s:82},{n:'Real Sociedad',s:78},{n:'Villarreal',s:76},{n:'Athletic',s:75},{n:'Betis',s:74},{n:'Sevilla',s:73},{n:'Valencia',s:70},{n:'Celta',s:66},{n:'Osasuna',s:64},{n:'Mallorca',s:62},{n:'Rayo',s:63},{n:'Getafe',s:62},{n:'Las Palmas',s:60},{n:'Alavés',s:58},{n:'Cádiz',s:57},{n:'Granada',s:56}]},
+premier:{name:'Premier League',country:'Inglaterra',tier:9,power:90,wage:200000,teams:[
+  {n:'Man City',s:92},{n:'Arsenal',s:89},{n:'Liverpool',s:88},{n:'Chelsea',s:85},{n:'Man United',s:83},{n:'Tottenham',s:82},{n:'Newcastle',s:81},{n:'Aston Villa',s:80},{n:'Brighton',s:78},{n:'West Ham',s:77},{n:'Crystal Palace',s:75},{n:'Fulham',s:74},{n:'Wolves',s:73},{n:'Brentford',s:73},{n:'Bournemouth',s:74},{n:'Everton',s:72},{n:'Nott. Forest',s:72},{n:'Leicester',s:71}]}
+};
+const LO=['serieC','serieB','serieA','argentina','portugal','ligue1','serieA_ita','laliga','premier'];
+
+const PW={GK:{f:.1,p:.4,d:.1,po:.9,v:.3,st:.7,sm:.4},CB:{f:.2,p:.5,d:.3,po:.8,v:.5,st:.9,sm:.6},LB:{f:.2,p:.6,d:.5,po:.7,v:.8,st:.6,sm:.8},RB:{f:.2,p:.6,d:.5,po:.7,v:.8,st:.6,sm:.8},CDM:{f:.3,p:.7,d:.4,po:.8,v:.5,st:.8,sm:.7},CM:{f:.5,p:.8,d:.6,po:.7,v:.5,st:.5,sm:.8},CAM:{f:.7,p:.9,d:.8,po:.6,v:.6,st:.3,sm:.6},LW:{f:.7,p:.6,d:.9,po:.5,v:.9,st:.3,sm:.7},RW:{f:.7,p:.6,d:.9,po:.5,v:.9,st:.3,sm:.7},CF:{f:.9,p:.6,d:.7,po:.8,v:.6,st:.6,sm:.6},ST:{f:.95,p:.4,d:.6,po:.8,v:.7,st:.7,sm:.5},SS:{f:.85,p:.7,d:.8,po:.7,v:.7,st:.4,sm:.6}};
+
+// Apelidos por posição
+const NICKNAMES={
+  GK:['Muralha','Paredão','São {nome}','Mão Santa','Gato'],
+  CB:['Xerife','Monstro','Zagueirão','Parede','Pitbull'],
+  LB:['Foguete','Turbo','Raio','Asa Esquerda'],RB:['Foguete','Turbo','Raio','Asa Direita'],
+  CDM:['Pitbull','Motor','Guerreiro','Cérebro','Cão de Guarda'],
+  CM:['Maestro','Cérebro','Motor','Mágico','Régua'],
+  CAM:['Mágico','Craque','Gênio','Artilheiro','Encantador'],
+  LW:['Raio','Relâmpago','Flecha','Neymar Jr','Pé de Anjo'],RW:['Raio','Relâmpago','Flecha','Messi Jr','Pé de Anjo'],
+  ST:['Goleador','Brocador','Matador','Artilheiro','Imperador','O Fenômeno'],
+  CF:['Goleador','Brocador','Matador','9','Imperador'],
+  SS:['Goleador','Mágico','Artilheiro','Sombra']
+};
+
+// Marcas organizadas por tier: 1=local/pequena, 2=nacional, 3=grande, 4=mundial/gigante
+const SPONSOR_BRANDS=[
+  // TIER 1 — marcas locais/pequenas (rep 5+, jogador iniciante)
+  {name:'Loja de Esportes Local',type:'esportiva local',base:200,imgBonus:1,tier:1,minRep:5},
+  {name:'Barbearia do Bairro',type:'barbearia',base:150,imgBonus:1,tier:1,minRep:5},
+  {name:'Açaí da Esquina',type:'alimentação',base:180,imgBonus:1,tier:1,minRep:8},
+  {name:'Suplementos FitMax',type:'suplementos',base:300,imgBonus:2,tier:1,minRep:10},
+  {name:'Ótica Visual',type:'acessórios',base:250,imgBonus:1,tier:1,minRep:10},
+  // TIER 2 — marcas nacionais (rep 20+, jogador série B/A)
+  {name:'Guaraná Antarctica',type:'bebida',base:600,imgBonus:2,tier:2,minRep:20},
+  {name:'Penalty',type:'esportiva',base:700,imgBonus:3,tier:2,minRep:20},
+  {name:'Topper',type:'esportiva',base:600,imgBonus:2,tier:2,minRep:18},
+  {name:'Banco do Brasil',type:'financeiro',base:800,imgBonus:2,tier:2,minRep:25},
+  {name:'Vivo',type:'telecomunicações',base:900,imgBonus:3,tier:2,minRep:25},
+  {name:'Ambev',type:'bebida',base:750,imgBonus:2,tier:2,minRep:22},
+  {name:'Riachuelo',type:'moda',base:500,imgBonus:2,tier:2,minRep:18},
+  // TIER 3 — marcas grandes (rep 40+, jogador destaque)
+  {name:'Puma',type:'esportiva',base:1500,imgBonus:4,tier:3,minRep:40},
+  {name:'Under Armour',type:'esportiva',base:1200,imgBonus:3,tier:3,minRep:38},
+  {name:'Gatorade',type:'bebida esportiva',base:1000,imgBonus:3,tier:3,minRep:35},
+  {name:'Gillette',type:'higiene',base:1100,imgBonus:3,tier:3,minRep:40},
+  {name:'Banco Itaú',type:'financeiro',base:1200,imgBonus:3,tier:3,minRep:42},
+  {name:'Coca-Cola',type:'bebida',base:1500,imgBonus:4,tier:3,minRep:45},
+  {name:'Red Bull',type:'energético',base:1800,imgBonus:4,tier:3,minRep:48},
+  // TIER 4 — marcas mundiais/gigantes (rep 65+, craque)
+  {name:'Nike',type:'esportiva',base:3000,imgBonus:6,tier:4,minRep:65},
+  {name:'Adidas',type:'esportiva',base:3000,imgBonus:6,tier:4,minRep:65},
+  {name:'Samsung',type:'tecnologia',base:2500,imgBonus:5,tier:4,minRep:60},
+  {name:'EA Sports',type:'games',base:2500,imgBonus:6,tier:4,minRep:62},
+  {name:'Pepsi',type:'bebida',base:2200,imgBonus:5,tier:4,minRep:58},
+  {name:'Louis Vuitton',type:'luxo',base:4000,imgBonus:8,tier:4,minRep:75},
+  {name:'Rolex',type:'relógios de luxo',base:5000,imgBonus:10,tier:4,minRep:80},
+  {name:'Lamborghini',type:'automóveis de luxo',base:6000,imgBonus:12,tier:4,minRep:85},
+];
+
+// ===== ESTADO =====
+let G={};
+
+function init(name,pos,nat){
+  const a={physical:{velocity:R(28,42),strength:R(25,38),stamina:R(32,45)},technical:{finishing:R(18,35),passing:R(22,38),dribbling:R(18,35),positioning:R(25,40)},mental:{decisionMaking:R(28,40),composure:R(25,38),gameVision:R(22,36),bravery:R(28,42)},social:{charisma:R(22,38),publicImage:R(12,28),influence:R(8,18)},personal:{focus:R(32,48),mediaManagement:R(12,28),financialStability:R(18,32),relationships:R(28,42)}};
+  const w=PW[pos];if(w){a.technical.finishing+=Math.floor(w.f*10);a.technical.passing+=Math.floor(w.p*8);a.technical.dribbling+=Math.floor(w.d*8);a.technical.positioning+=Math.floor(w.po*8);a.physical.velocity+=Math.floor(w.v*8);a.physical.strength+=Math.floor(w.st*6);a.physical.stamina+=Math.floor(w.sm*6);}
+  const sc=pick(LEAGUES.serieC.teams);
+  G={p:{name,pos,nat,age:16,lvl:1,xpT:0,a,xp:{physical:{velocity:0,strength:0,stamina:0},technical:{finishing:0,passing:0,dribbling:0,positioning:0},mental:{decisionMaking:0,composure:0,gameVision:0,bravery:0},social:{charisma:0,publicImage:0,influence:0},personal:{focus:0,mediaManagement:0,financialStability:0,relationships:0}},
+    money:100,wage:400,endorse:0,biz:0,earned:0,energy:100,morale:70,followers:R(100,500),injured:0,
+    club:sc.n,clubStr:sc.s,apps:0,goals:0,assists:0,sGoals:0,sAssists:0,sApps:0,clubApps:0,
+    rel:{agent:50,parents:70,coach:45,team:50,fans:30},
+    contract:{wks:104,wage:400,club:sc.n},owned:[],
+    nickname:null,fanLove:0,coachTrust:40,starter:false,
+    sponsors:[],youthCaps:{},reputation:10, // 0-100 reputation
+    scoutInterest:[], // [{club,league,times}]
+  },
+  season:1,week:1,mw:38,wa:5,au:{train:0,play:0,media:0,rest:0,personal:0},
+  matchOn:true,curM:null,lk:'serieC',
+  league:genT('serieC',sc.n),
+  offers:[],news:[],topScorers:[],
+  achs:[
+    // GOLS
+    {id:'fg',n:'Primeiro Gol',d:'Marque seu 1º gol profissional',i:'⚽',ok:0},
+    {id:'5g',n:'Artilheiro Iniciante',d:'5 gols na temporada',i:'🎯',ok:0},
+    {id:'10g',n:'Artilheiro',d:'10 gols na temporada',i:'🎯',ok:0},
+    {id:'20g',n:'Goleador',d:'20 gols na temporada',i:'🔥',ok:0},
+    {id:'30g',n:'Imparável',d:'30 gols na temporada',i:'💣',ok:0},
+    {id:'50g',n:'Máquina de Gols',d:'50 gols na carreira',i:'💥',ok:0},
+    {id:'100g',n:'Centenário',d:'100 gols na carreira',i:'💯',ok:0},
+    {id:'200g',n:'Lendário',d:'200 gols na carreira',i:'👑',ok:0},
+    // ASSISTÊNCIAS
+    {id:'fa',n:'Primeira Assistência',d:'Dê sua 1ª assistência',i:'🎯',ok:0},
+    {id:'10a',n:'Garçom',d:'10 assistências na temporada',i:'📐',ok:0},
+    {id:'50a',n:'Maestro',d:'50 assistências na carreira',i:'🎼',ok:0},
+    // JOGOS
+    {id:'10j',n:'Estreante',d:'10 jogos na carreira',i:'📋',ok:0},
+    {id:'50j',n:'Veterano',d:'50 jogos na carreira',i:'📋',ok:0},
+    {id:'100j',n:'Centurião',d:'100 jogos na carreira',i:'🏛️',ok:0},
+    {id:'200j',n:'Referência',d:'200 jogos na carreira',i:'🗿',ok:0},
+    {id:'leg',n:'Lenda do Clube',d:'200+ jogos por um clube',i:'👑',ok:0},
+    // CARREIRA
+    {id:'up',n:'Subiu de Liga',d:'Transferido pra liga maior',i:'📈',ok:0},
+    {id:'serB',n:'Série B',d:'Jogue na Série B do Brasileirão',i:'🇧🇷',ok:0},
+    {id:'serA',n:'Série A',d:'Jogue na Série A do Brasileirão',i:'🇧🇷',ok:0},
+    {id:'arg',n:'Hermanos',d:'Jogue na Liga Argentina',i:'🇦🇷',ok:0},
+    {id:'eu',n:'Sonho Europeu',d:'Jogue na Europa',i:'🌍',ok:0},
+    {id:'t5',n:'Top 5 Ligas',d:'Jogue numa das 5 grandes europeias',i:'🏟️',ok:0},
+    {id:'prem',n:'Premier League',d:'Jogue na Premier League',i:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',ok:0},
+    // TÍTULOS
+    {id:'ch',n:'Campeão',d:'Vença o título da liga',i:'🏆',ok:0},
+    {id:'ch2',n:'Bicampeão',d:'Vença 2 títulos de liga',i:'🏆',ok:0},
+    {id:'ch3',n:'Tricampeão',d:'Vença 3 títulos de liga',i:'🏆',ok:0},
+    // DINHEIRO
+    {id:'100k',n:'Primeiros 100K',d:'Acumule R$100K',i:'💵',ok:0},
+    {id:'500k',n:'Meio Milhão',d:'Acumule R$500K',i:'💰',ok:0},
+    {id:'1m',n:'Milionário',d:'Ganhe R$1M no total',i:'💎',ok:0},
+    {id:'10m',n:'Magnata',d:'Ganhe R$10M no total',i:'🤑',ok:0},
+    // FAMA
+    {id:'10kf',n:'Conhecido',d:'10K seguidores',i:'📱',ok:0},
+    {id:'100kf',n:'Influenciador',d:'100K seguidores',i:'📱',ok:0},
+    {id:'1mf',n:'Celebridade',d:'1M de seguidores',i:'⭐',ok:0},
+    // RELAÇÕES
+    {id:'nick',n:'Ídolo',d:'Receba um apelido da torcida',i:'❤️',ok:0},
+    {id:'tit',n:'Titular Absoluto',d:'Seja titular com confiança 90+',i:'🟢',ok:0},
+    {id:'amado',n:'Amado pela Torcida',d:'Relação com torcida 90+',i:'😍',ok:0},
+    // SELEÇÃO
+    {id:'sel',n:'Seleção de Base',d:'Convocado para seleção de base',i:'🇧🇷',ok:0},
+    // PATROCÍNIO
+    {id:'sp1',n:'Primeiro Patrocínio',d:'Assine seu 1º contrato de patrocínio',i:'📝',ok:0},
+    {id:'sp3',n:'Garoto Propaganda',d:'Tenha 3+ patrocínios ativos',i:'📺',ok:0},
+    // NOTAS
+    {id:'n9',n:'Atuação Perfeita',d:'Tire nota 9+ em uma partida',i:'🌟',ok:0},
+    {id:'n8x5',n:'Consistência',d:'5 jogos seguidos com nota 7+',i:'📊',ok:0},
+    // ESPECIAIS
+    {id:'hat',n:'Hat-trick',d:'Marque 3+ gols em uma partida',i:'🎩',ok:0},
+    {id:'scout5',n:'Observado',d:'Seja observado por 5 olheiros diferentes',i:'🔍',ok:0},
+    {id:'biz',n:'Empresário',d:'Tenha um negócio próprio',i:'🏢',ok:0},
+    {id:'rep50',n:'Reputação Nacional',d:'Alcance 50 de reputação',i:'⭐',ok:0},
+    {id:'rep80',n:'Fama Internacional',d:'Alcance 80 de reputação',i:'🌟',ok:0},
+    {id:'age30',n:'Longevidade',d:'Continue jogando aos 30 anos',i:'🧓',ok:0},
+  ],
+  shop:[{id:'bike',n:'Bicicleta',ic:'🚲',pr:500,img:5,mor:2,inc:0,ow:0},{id:'car',n:'Carro Esportivo',ic:'🏎️',pr:80000,img:10,mor:5,inc:0,ow:0},{id:'lcar',n:'Supercarro',ic:'🏎️',pr:350000,img:20,mor:8,inc:0,ow:0},{id:'watch',n:'Relógio Grife',ic:'⌚',pr:25000,img:8,mor:3,inc:0,ow:0},{id:'house',n:'Casa Moderna',ic:'🏠',pr:500000,img:12,mor:10,inc:0,ow:0},{id:'mansion',n:'Mansão',ic:'🏰',pr:3000000,img:25,mor:15,inc:0,ow:0},{id:'cafe',n:'Cafeteria',ic:'☕',pr:200000,img:5,mor:4,inc:2000,ow:0},{id:'gym',n:'Academia',ic:'🏋️',pr:400000,img:8,mor:5,inc:5000,ow:0},{id:'fashion',n:'Loja Moda',ic:'👗',pr:600000,img:15,mor:6,inc:8000,ow:0}],
+  evLog:[],sHist:[],rumors:[]
+  };
+  genNews();
+  genTopScorers();
+}
+
+function genT(k,pc){return LEAGUES[k].teams.map(t=>({n:t.n,s:t.s,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0,me:t.n===pc,topScorer:pick(['Silva','Santos','Oliveira','Costa','Souza','Pereira','Almeida','Lima','Fernandes','Ribeiro']),topGoals:0}))}
+
+function ovr(){const a=G.p.a,w=PW[G.p.pos]||PW.CM;let t=0,s=0;[[a.technical.finishing,w.f],[a.technical.passing,w.p],[a.technical.dribbling,w.d],[a.technical.positioning,w.po],[a.physical.velocity,w.v],[a.physical.strength,w.st],[a.physical.stamina,w.sm]].forEach(([v,wt])=>{t+=v*wt;s+=wt});t+=(a.mental.decisionMaking+a.mental.composure+a.mental.gameVision+a.mental.bravery)/4*.5;s+=.5;return Math.round(t/s)}
+
+// Calcula % de sucesso real
+function calcPct(diff,attrs){
+  const th={veryEasy:10,easy:25,medium:50,difficult:75,veryDifficult:90}[diff]||50;
+  let avgBonus=0;attrs.forEach(v=>{if(v>=80)avgBonus+=15;else if(v>=65)avgBonus+=10;else if(v>=50)avgBonus+=5;else if(v>=35)avgBonus+=2});
+  if(G.p.morale>=80)avgBonus+=5;if(G.p.morale<=30)avgBonus-=5;if(G.p.energy<=30)avgBonus-=10;
+  // % = chance de dado+bonus >= threshold
+  const needed=th-avgBonus;
+  const pct=cl(Math.round((100-needed)/99*100),2,98);
+  return pct;
+}
+
+function roll(diff,attrs,ctx={}){
+  const th={veryEasy:10,easy:25,medium:50,difficult:75,veryDifficult:90}[diff]||50;
+  let b=R(1,99),bon=0;
+  attrs.forEach(v=>{if(v>=80)bon+=15;else if(v>=65)bon+=10;else if(v>=50)bon+=5;else if(v>=35)bon+=2});
+  if(G.p.morale>=80)bon+=5;if(G.p.morale<=30)bon-=5;if(G.p.energy<=30)bon-=10;
+  if(ctx.home)bon+=5;if(ctx.strong)bon-=10;if(ctx.weak)bon+=10;if(ctx.pressure)bon-=5;
+  const f=cl(b+bon,1,99);return{base:b,bonus:bon,final:f,threshold:th,ok:f>=th,margin:f-th};
+}
+
+function addXP(c,a,n){if(!G.p.xp[c]||G.p.xp[c][a]===undefined)return;G.p.xp[c][a]+=n;G.p.xpT+=n;while(G.p.xp[c][a]>=10){G.p.xp[c][a]-=10;G.p.a[c][a]=cl(G.p.a[c][a]+1,1,99)}const nl=Math.floor(G.p.xpT/100)+1;if(nl>G.p.lvl){G.p.lvl=nl;notify('Nível '+nl+'!','ok')}}
+
+// ===== NOTÍCIAS =====
+// Jogadores reais por liga
+const PLAYERS_BY_LEAGUE={
+  serieC:[{n:'Pottker',t:'Remo'},{n:'Nicolas',t:'Paysandu'},{n:'Wallyson',t:'ABC'},{n:'Henan',t:'Figueirense'},{n:'Diogo Vitor',t:'Londrina'},{n:'Bruno Mezenga',t:'Náutico'},{n:'Anselmo Ramon',t:'CSA'},{n:'Robinho',t:'Brusque'},{n:'Léo Gamalho',t:'Sampaio Corrêa'},{n:'Rafael Carioca',t:'Tombense'}],
+  serieB:[{n:'Lucero',t:'Sport'},{n:'Erick Pulga',t:'Ceará'},{n:'Nicolas',t:'Goiás'},{n:'Léo Gamalho',t:'Coritiba'},{n:'Giovanni Augusto',t:'Ponte Preta'},{n:'Davó',t:'Guarani'},{n:'Hygor',t:'Mirassol'},{n:'Pablo',t:'Juventude'},{n:'Caio Dantas',t:'Chapecoense'},{n:'Clayson',t:'Criciúma'}],
+  serieA:[{n:'Pedro',t:'Flamengo'},{n:'Endrick',t:'Palmeiras'},{n:'Luciano',t:'São Paulo'},{n:'Yuri Alberto',t:'Corinthians'},{n:'Hulk',t:'Atlético-MG'},{n:'Germán Cano',t:'Fluminense'},{n:'Tiquinho',t:'Botafogo'},{n:'Luis Suárez',t:'Grêmio'},{n:'Borré',t:'Internacional'},{n:'Marcos Leonardo',t:'Santos'},{n:'Vegetti',t:'Vasco'},{n:'Everaldo',t:'Bahia'},{n:'Moisés',t:'Fortaleza'},{n:'Cano',t:'Cruzeiro'},{n:'Vitor Roque',t:'Athletico-PR'}],
+  argentina:[{n:'Borja',t:'River Plate'},{n:'Cavani',t:'Boca Juniors'},{n:'Maravilla Martínez',t:'Racing'},{n:'Silvio Romero',t:'Independiente'},{n:'Adam Bareiro',t:'San Lorenzo'},{n:'Lucas Janson',t:'Vélez'},{n:'Retegui',t:'Talleres'},{n:'Ramón Ábila',t:'Rosario Central'}],
+  portugal:[{n:'Ángel Di María',t:'Benfica'},{n:'Evanilson',t:'Porto'},{n:'Gonçalo Inácio',t:'Sporting'},{n:'Bruma',t:'Braga'},{n:'Anderson Silva',t:'Vitória SC'},{n:'Banza',t:'Famalicão'},{n:'Samu',t:'Porto'},{n:'Galeno',t:'Porto'}],
+  ligue1:[{n:'Mbappé',t:'PSG'},{n:'Aubameyang',t:'Marseille'},{n:'Ben Yedder',t:'Monaco'},{n:'Lacazette',t:'Lyon'},{n:'David',t:'Lille'},{n:'Openda',t:'Lens'},{n:'Laborde',t:'Nice'},{n:'Terrier',t:'Rennes'}],
+  serieA_ita:[{n:'Lautaro',t:'Inter'},{n:'Giroud',t:'Milan'},{n:'Vlahovic',t:'Juventus'},{n:'Osimhen',t:'Napoli'},{n:'Lukaku',t:'Roma'},{n:'Immobile',t:'Lazio'},{n:'Lookman',t:'Atalanta'},{n:'Belotti',t:'Fiorentina'}],
+  laliga:[{n:'Vinícius Jr',t:'Real Madrid'},{n:'Lewandowski',t:'Barcelona'},{n:'Griezmann',t:'Atlético'},{n:'Oyarzabal',t:'Real Sociedad'},{n:'Gerard Moreno',t:'Villarreal'},{n:'Iñaki Williams',t:'Athletic'},{n:'Isco',t:'Betis'},{n:'Rodrigo',t:'Valencia'}],
+  premier:[{n:'Haaland',t:'Man City'},{n:'Saka',t:'Arsenal'},{n:'Salah',t:'Liverpool'},{n:'Palmer',t:'Chelsea'},{n:'Rashford',t:'Man United'},{n:'Son',t:'Tottenham'},{n:'Isak',t:'Newcastle'},{n:'Watkins',t:'Aston Villa'},{n:'Mitoma',t:'Brighton'},{n:'Bowen',t:'West Ham'}]
+};
+
+// Clubes grandes por região para notícias de mercado
+const BIG_CLUBS_BY_TIER={
+  1:['Sport','Goiás','Coritiba','Ceará'],
+  2:['Palmeiras','Flamengo','São Paulo','Corinthians','Atlético-MG'],
+  3:['River Plate','Boca Juniors','Benfica','Porto'],
+  4:['Benfica','Porto','Sporting','Braga'],
+  5:['PSG','Lyon','Marseille','Monaco'],
+  6:['PSG','Marseille','Lyon','Lille'],
+  7:['Inter','Juventus','Milan','Napoli','Roma'],
+  8:['Real Madrid','Barcelona','Atlético','Sevilla'],
+  9:['Man City','Arsenal','Liverpool','Chelsea','Man United']
+};
+
+function genNews(){
+  G.news=[];
+  const lg=LEAGUES[G.lk];
+  const players=PLAYERS_BY_LEAGUE[G.lk]||[];
+  const bigClubs=BIG_CLUBS_BY_TIER[lg.tier]||['Palmeiras','Flamengo'];
+
+  for(let i=0;i<5;i++){
+    const team=pick(lg.teams);
+    // Pega jogador REAL da liga atual
+    const pl=players.length>0?pick(players):{n:pick(['Silva','Santos','Oliveira','Costa','Souza','Pereira']),t:team.n};
+    const type=R(1,6);
+    if(type===1)G.news.push({headline:`${pl.n} (${pl.t}) marca dois gols e é destaque na rodada`,body:`Atuação nota ${(R(75,95)/10).toFixed(1)}. Torcida do ${pl.t} comemora.`,hot:true});
+    else if(type===2)G.news.push({headline:`${pl.n} (${pl.t}) decepciona e recebe nota baixa`,body:`Nota ${(R(30,50)/10).toFixed(1)}. Torcida cobra melhor desempenho.`,hot:false});
+    else if(type===3)G.news.push({headline:`${team.n}: Técnico elogia elenco após vitória`,body:`"Estamos no caminho certo", disse o treinador do ${team.n}.`,hot:false});
+    else if(type===4){
+      const bigClub=pick(bigClubs);
+      G.news.push({headline:`Mercado: ${bigClub} observa jogadores da ${lg.name}`,body:`Olheiros foram vistos no último jogo da rodada.`,hot:true,scout:true});
+    }
+    else if(type===5)G.news.push({headline:`${team.n} vence e sobe na tabela`,body:`Resultado positivo anima o elenco para as próximas rodadas.`,hot:false});
+    else G.news.push({headline:`Lesão tira ${pl.n} (${pl.t}) por semanas`,body:`Jogador sofreu lesão no treino e desfalca a equipe.`,hot:false});
+  }
+}
+
+function genTopScorers(){
+  G.topScorers=[];
+  const players=PLAYERS_BY_LEAGUE[G.lk]||[];
+  if(players.length>0){
+    const used=new Set();
+    for(let i=0;i<Math.min(10,players.length);i++){
+      let pl;do{pl=pick(players)}while(used.has(pl.n)&&used.size<players.length);
+      used.add(pl.n);
+      G.topScorers.push({name:pl.n,team:pl.t,goals:R(2,12)});
+    }
+  } else {
+    for(let i=0;i<10;i++){const t=pick(LEAGUES[G.lk].teams);G.topScorers.push({name:pick(['Silva','Santos','Oliveira','Costa']),team:t.n,goals:R(2,10)})}
+  }
+  G.topScorers.sort((a,b)=>b.goals-a.goals);
+}
+
+function addPlayerToTopScorers(){
+  let found=G.topScorers.find(x=>x.name===G.p.name);
+  if(found)found.goals=G.p.sGoals;
+  else if(G.p.sGoals>0)G.topScorers.push({name:G.p.name,team:G.p.club,goals:G.p.sGoals});
+  G.topScorers.sort((a,b)=>b.goals-a.goals);
+  G.topScorers=G.topScorers.slice(0,15);
+}
+
+function genScoutNews(){
+  if(G.p.reputation<20)return;
+  const tier=LEAGUES[G.lk].tier;
+  const possibleLeagues=LO.filter(k=>{const t=LEAGUES[k].tier;return t>tier&&t<=tier+2});
+  if(possibleLeagues.length===0)return;
+  const lk=pick(possibleLeagues);const lg=LEAGUES[lk];const team=pick(lg.teams);
+  G.news.unshift({headline:`🔍 Olheiro do ${team.n} (${lg.name}) observou ${G.p.name}`,body:`O scout ficou impressionado com a atuação recente do jogador do ${G.p.club}.`,hot:true,scout:true});
+  // Track interest
+  let si=G.p.scoutInterest.find(x=>x.club===team.n);
+  if(si)si.times++;else G.p.scoutInterest.push({club:team.n,league:lk,times:1});
+}
+
+// ===== TELAS =====
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));$('game-screen').classList.add('hidden');id==='game-screen'?$('game-screen').classList.remove('hidden'):$(id).classList.remove('hidden')}
+let selPos=null;
+document.querySelectorAll('.posbtn').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('.posbtn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');selPos=b.dataset.p})});
+
+function startGame(){const n=$('pname').value.trim()||'Alex Silva';if(!selPos){notify('Selecione posição!','err');return}init(n,selPos,$('pnat').value);showScreen('game-screen');buildSidebar();updateHUD();switchTab('news')}
+
+function buildSidebar(){
+  const tabs=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['attributes','📊','Atributos'],['match','⚽','Jogo'],['league','🏆','Classificação'],['scorers','⚽','Artilharia'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
+  $('sidebar').innerHTML=tabs.map(([t,i,l])=>`<div class="ni${t==='news'?' act':''}" data-t="${t}" onclick="switchTab('${t}')"><span class="ic">${i}</span>${l}</div>`).join('');
+}
+
+function updateHUD(){
+  $('hn').innerHTML=G.p.name+(G.p.nickname?` <span class="nickname">"${G.p.nickname}"</span>`:'');
+  $('hm').textContent=`${PL[G.p.pos]} | ${G.p.age}a | Nv${G.p.lvl}`;
+  $('h$').textContent=fm(G.p.money);$('he').textContent=Math.round(G.p.energy);
+  $('hmo').textContent=Math.round(G.p.morale);$('hf').textContent=ff(G.p.followers);
+  $('ho').textContent=ovr();$('hs').textContent=`T${G.season}`;
+  $('hw').textContent=`S${G.week}/${G.mw}`;$('hc').textContent=G.p.club;
+}
+
+function switchTab(t){document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));document.querySelector(`.ni[data-t="${t}"]`)?.classList.add('act');renderTab(t)}
+function renderTab(t){const m={dashboard:rDash,actions:rActions,attributes:rAttrs,match:rMatch,news:rNews,league:rLeague,scorers:rScorers,transfers:rTransfers,agent:rAgent,relationships:rRels,finances:rFin,shop:rShop,achievements:rAchs};if(m[t])m[t]($('ca'))}
+function actionsLeft(){return G.wa-Object.values(G.au).filter(v=>v).length}
+
+// ===== PAINEL =====
+function rDash(el){
+  const p=G.p,o=ovr(),lg=LEAGUES[G.lk];
+  const starterText=p.coachTrust>=60?'<span class="starter-badge titular">TITULAR</span>':'<span class="starter-badge reserva">RESERVA</span>';
+  const c=v=>v>=75?'var(--green)':v>=50?'var(--gold)':v>=30?'var(--orange)':'var(--red)';
+  el.innerHTML=`<div class="cg">
+    <div class="card"><h3>📊 ${p.name} ${p.nickname?'<span class="nickname">"'+p.nickname+'"</span>':''}</h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div><div style="color:#aaa;font-size:.85rem">${PL[p.pos]} | ${p.nat} | ${p.age} anos</div>
+          <div style="color:#aaa;font-size:.85rem">${p.club} — ${lg.name} (${lg.country}) ${starterText}</div>
+          <div style="color:#888;font-size:.8rem;margin-top:4px">Reputação: ${'⭐'.repeat(Math.min(5,Math.floor(p.reputation/20)))} (${p.reputation}/100)</div></div>
+        <div style="text-align:center"><div style="font-size:3rem;font-family:'Oswald';color:${c(o)}">${o}</div><div style="font-size:.75rem;color:#888">GERAL</div></div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+        <div><div style="font-size:1.3rem;font-family:'Oswald';color:var(--gold)">${p.sGoals}</div><div style="font-size:.7rem;color:#888">GOLS</div></div>
+        <div><div style="font-size:1.3rem;font-family:'Oswald';color:var(--gold)">${p.sAssists}</div><div style="font-size:.7rem;color:#888">ASSIST</div></div>
+        <div><div style="font-size:1.3rem;font-family:'Oswald';color:var(--gold)">${p.sApps}</div><div style="font-size:.7rem;color:#888">JOGOS</div></div></div></div>
+    <div class="card"><h3>⚡ Status</h3>
+      ${[['Energia',p.energy,'pb-e'],['Moral',p.morale,'pb-m'],['Nível',G.p.xpT%100,'pb-x']].map(([l,v,c])=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px"><span>${l}</span><span style="color:var(--gold)">${Math.round(v)}${l==='Nível'?'/100 XP':'%'}</span></div><div class="pbar"><div class="pb ${c}" style="width:${v}%"></div></div></div>`).join('')}
+      ${p.injured>0?`<div style="color:var(--red);font-weight:700;margin-top:6px">🏥 LESIONADO — ${p.injured} sem.</div>`:''}
+      <div style="margin-top:10px;font-size:.82rem;color:#aaa">
+        <div>💰 Salário: ${fm(p.wage)}/sem | 📝 Contrato: ${p.contract.wks} sem.</div>
+        <div>📱 ${ff(p.followers)} seguidores | 🕴️ ${p.sponsors.length} patrocínios</div></div></div>
+    <div class="card"><h3>📋 Ações (${actionsLeft()} restantes)</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.82rem">
+        ${[['train','🏋️ Treinar'],['play','⚽ Jogar'],['media','📺 Mídia'],['rest','😴 Descansar'],['personal','🏡 Pessoal']].map(([k,l])=>`<div style="padding:6px 8px;background:${G.au[k]?'rgba(46,204,113,.15)':'rgba(255,255,255,.03)'};border:1px solid ${G.au[k]?'var(--green)':'var(--brd)'};cursor:pointer" onclick="switchTab('actions')">${l} ${G.au[k]?'✅':''}</div>`).join('')}</div>
+      ${actionsLeft()<=0?'<div style="text-align:center;margin-top:12px"><button class="btn btn-g btn-sm" onclick="advWeek()">Avançar Semana →</button></div>':''}</div>
+    <div class="card"><h3>📰 Últimas Notícias</h3>
+      <div style="max-height:180px;overflow-y:auto">${G.news.slice(0,4).map(n=>`<div class="news-item${n.hot?' hot':''}${n.scout?' scout-news':''}"><div class="headline">${n.headline}</div></div>`).join('')||'<div style="color:#666">Sem notícias.</div>'}</div>
+      <div style="text-align:center;margin-top:8px"><button class="btn btn-sm btn-b" onclick="switchTab('news')">Ver todas →</button></div></div>
+    <div class="card"><h3>📰 Eventos</h3><div style="font-size:.82rem;max-height:160px;overflow-y:auto">${G.evLog.slice(-6).reverse().map(e=>`<div style="padding:3px 0;border-bottom:1px solid rgba(255,255,255,.05);color:#bbb">${e}</div>`).join('')||'<div style="color:#666">Comece a jogar!</div>'}</div></div>
+  </div>`;
+}
+
+// ===== AÇÕES =====
+function rActions(el){
+  const rem=actionsLeft();
+  el.innerHTML=`<div class="card"><h3>📋 Ações — ${rem} restantes</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
+      ${[['train','🏋️','Treinar','Ganhe XP no atributo'],['play','⚽','Jogar','Partida da rodada'],['media','📺','Mídia','Fama e seguidores'],['rest','😴','Descansar','Energia e recuperação'],['personal','🏡','Pessoal','Família e bem-estar']].map(([k,ic,nm,ds])=>`<div style="background:var(--sec);border:2px solid ${G.au[k]?'var(--green)':'var(--brd)'};padding:16px;text-align:center;cursor:${G.au[k]?'default':'pointer'};opacity:${G.au[k]?.4:1};transition:all .3s" ${G.au[k]?'':`onclick="doAct('${k}')"`} onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='${G.au[k]?'var(--green)':'var(--brd)'}'"><div style="font-size:1.8rem;margin-bottom:8px">${ic}</div><div style="font-family:'Oswald';color:var(--gold);text-transform:uppercase;margin-bottom:4px">${nm}</div><div style="font-size:.78rem;color:#999">${G.au[k]?'✅ Feito':ds}</div></div>`).join('')}
+    </div>
+    ${rem<=0?'<div style="text-align:center;margin-top:20px"><button class="btn btn-g" onclick="advWeek()">Avançar Semana →</button></div>':''}
+  </div>`;
+}
+
+function doAct(t){if(G.au[t])return;if(G.p.injured>0&&t==='play'){notify('Lesionado!','err');return}
+({train:()=>showModal('Treino','Escolha o atributo:',[
+  {t:'⚡ Velocidade ('+G.p.a.physical.velocity+')',e:()=>{trainAttr('physical','velocity')}},
+  {t:'💪 Força ('+G.p.a.physical.strength+')',e:()=>{trainAttr('physical','strength')}},
+  {t:'🫁 Resistência ('+G.p.a.physical.stamina+')',e:()=>{trainAttr('physical','stamina')}},
+  {t:'🎯 Finalização ('+G.p.a.technical.finishing+')',e:()=>{trainAttr('technical','finishing')}},
+  {t:'📐 Passe ('+G.p.a.technical.passing+')',e:()=>{trainAttr('technical','passing')}},
+  {t:'🌀 Drible ('+G.p.a.technical.dribbling+')',e:()=>{trainAttr('technical','dribbling')}},
+  {t:'📍 Posicionamento ('+G.p.a.technical.positioning+')',e:()=>{trainAttr('technical','positioning')}},
+  {t:'🧠 Decisão ('+G.p.a.mental.decisionMaking+')',e:()=>{trainAttr('mental','decisionMaking')}},
+  {t:'😤 Compostura ('+G.p.a.mental.composure+')',e:()=>{trainAttr('mental','composure')}},
+  {t:'👁️ Visão ('+G.p.a.mental.gameVision+')',e:()=>{trainAttr('mental','gameVision')}},
+]),
+play:startMatch,media:doMedia,rest:doRest,
+personal:()=>showModal('Tempo Pessoal','O que fazer?',[
+  {t:'👨‍👩‍👧 Família (+Moral, +Relação Pais)',e:()=>{G.au.personal=1;G.p.rel.parents=cl(G.p.rel.parents+R(5,12),0,100);G.p.morale=cl(G.p.morale+R(5,10),0,100);addXP('personal','relationships',2);log('Família.');notify('Moral+','ok');uh();switchTab('actions')}},
+  {t:'🤝 Entrosamento (+Relação Time)',e:()=>{G.au.personal=1;G.p.rel.team=cl(G.p.rel.team+R(5,12),0,100);addXP('social','charisma',2);log('Entrosamento.');notify('Time+','ok');uh();switchTab('actions')}},
+  {t:'💼 Finanças (+Estabilidade)',e:()=>{G.au.personal=1;addXP('personal','financialStability',3);G.p.money+=Math.floor(G.p.wage*.1);log('Finanças.');uh();switchTab('actions')}},
+  {t:'🧘 Meditação (+Foco, +Compostura)',e:()=>{G.au.personal=1;addXP('personal','focus',2);addXP('mental','composure',2);G.p.morale=cl(G.p.morale+5,0,100);log('Meditação.');uh();switchTab('actions')}},
+  {t:'📸 Fotos com torcedores (+Torcida)',e:()=>{G.au.personal=1;G.p.rel.fans=cl(G.p.rel.fans+R(5,15),0,100);G.p.fanLove+=R(3,8);G.p.followers+=R(500,3000);addXP('social','publicImage',2);checkNickname();log('Fotos com torcida.');notify('Torcida ama!','ok');uh();switchTab('actions')}},
+])
+})[t]();
+}
+
+function trainAttr(c,a){
+  G.au.train=1;const xp=R(2,4);addXP(c,a,xp);G.p.energy=cl(G.p.energy-R(5,12),0,100);
+  // Treino bom aumenta confiança do técnico se é reserva
+  if(!G.p.starter){G.p.coachTrust=cl(G.p.coachTrust+R(1,3),0,100);if(G.p.coachTrust>=60){G.p.starter=true;notify('O técnico te colocou como TITULAR!','ok');log('Virou titular!')}}
+  log('Treinou '+AL[a]);notify(AL[a]+' +'+xp+'XP','ok');uh();switchTab('actions');
+}
+function doMedia(){
+  const r=roll('medium',[G.p.a.social.charisma,G.p.a.personal.mediaManagement]);G.au.media=1;
+  if(r.ok){const f=R(1000,8000);G.p.followers+=f;addXP('social','publicImage',2);addXP('personal','mediaManagement',2);G.p.morale=cl(G.p.morale+3,0,100);G.p.reputation=cl(G.p.reputation+1,0,100);log('Boa mídia! +'+ff(f));notify('Mídia ✅','ok')}
+  else{G.p.followers=Math.max(0,G.p.followers-R(200,1000));addXP('personal','mediaManagement',1);G.p.morale=cl(G.p.morale-3,0,100);log('Mídia ruim.');notify('Mídia ❌','err')}
+  uh();switchTab('actions');
+}
+function doRest(){G.au.rest=1;const r=R(20,35);G.p.energy=cl(G.p.energy+r,0,100);G.p.morale=cl(G.p.morale+R(3,8),0,100);if(G.p.injured>0){G.p.injured--;log('Descansou, lesão melhorou.')}else log('Descansou +'+r);notify('Energia +'+r,'ok');uh();switchTab('actions')}
+
+// ===== APELIDO DA TORCIDA =====
+function checkNickname(){
+  if(G.p.nickname)return; // Já tem
+  if(G.p.fanLove>=30||G.p.rel.fans>=65){
+    const nicks=NICKNAMES[G.p.pos]||['Craque','Ídolo'];
+    let nick=pick(nicks);nick=nick.replace('{nome}',G.p.name.split(' ')[0]);
+    G.p.nickname=nick;
+    notify('A torcida te apelidou de "'+nick+'"!','ok');log('Apelido: "'+nick+'"');
+    checkAch('nick');
+    G.news.unshift({headline:`❤️ Torcida do ${G.p.club} adota apelido para ${G.p.name}: "${nick}"`,body:'O jogador conquistou o coração dos torcedores com suas atuações.',hot:true});
+  }
+}
+
+// ===== PARTIDA =====
+function startMatch(){
+  if(!G.matchOn||G.au.play)return;
+  const pi=G.league.findIndex(t=>t.me);let oi;do{oi=R(0,G.league.length-1)}while(oi===pi);
+  const opp=G.league[oi],home=R(0,1)===0;
+  const isClassico=['Flamengo','Palmeiras','Corinthians','São Paulo','Vasco','Botafogo','Grêmio','Internacional','Cruzeiro','Atlético-MG','Santos','River Plate','Boca Juniors','Real Madrid','Barcelona','Man City','Liverpool','Juventus','Inter','Milan','PSG','Benfica','Porto'].includes(opp.n);
+  G.curM={opp:opp.n,oppS:opp.s,home,pg:0,og:0,tg:0,pa:0,min:0,log:[],phase:'pre',rat:6.0,ac:0,pi,oi,classico:isClassico,scoutWatch:G.p.reputation>=15&&R(1,100)<=30+G.p.reputation/2};
+  G.au.play=1;switchTab('match');
+}
+
+function rMatch(el){
+  if(!G.curM){el.innerHTML=`<div class="card"><h3>⚽ Dia de Jogo</h3><p style="color:#aaa">${G.matchOn&&!G.au.play?'Partida disponível! Vá em Ações.':'Sem jogo.'}</p></div>`;return}
+  const m=G.curM;
+  if(m.phase==='pre'){
+    el.innerHTML=`<div class="mh"><div style="font-size:.85rem;color:#888;margin-bottom:6px">${LEAGUES[G.lk].name} — Semana ${G.week} ${m.classico?'<span style="color:var(--gold)">⭐ CLÁSSICO</span>':''}</div>
+      <div class="tms"><span class="tn" style="color:${m.home?'var(--gold)':'#ccc'}">${m.home?G.p.club:m.opp}</span><span style="font-family:'Oswald';font-size:1.8rem;color:var(--gold)">VS</span><span class="tn" style="color:${!m.home?'var(--gold)':'#ccc'}">${m.home?m.opp:G.p.club}</span></div>
+      <div style="font-size:.82rem;color:#aaa;margin-top:6px">${m.home?'🏟️ Casa':'✈️ Fora'} | Força: ${m.oppS}</div>
+      ${m.scoutWatch?'<div style="color:#e0a0ff;font-size:.85rem;margin-top:8px;font-style:italic">🔍 Olheiros de clubes maiores estão nas arquibancadas!</div>':''}
+      <div style="font-size:.82rem;color:#aaa;margin-top:4px">${G.p.starter?'Você é <b style="color:var(--green)">TITULAR</b>':'Você começa no <b style="color:var(--orange)">BANCO</b> (entra no 2º tempo)'}</div></div>
+      <div style="text-align:center"><button class="btn btn-g" onclick="kickOff()">⚽ Apitar!</button></div>`;return}
+  if(m.phase==='action'){rMatchAction(el);return}
+  if(m.phase==='done'){rMatchResult(el);return}
+}
+
+function kickOff(){const m=G.curM;m.phase='play';m.log=[];m.min=G.p.starter?0:45;if(!G.p.starter){m.log.push({min:45,text:"45' — Intervalo. Técnico te coloca em campo!",type:'event'})}advMatch()}
+
+function advMatch(){
+  const m=G.curM;let safe=0;
+  while(m.min<90&&safe<60){safe++;m.min+=R(2,7);if(m.min>90)m.min=90;
+    const ev=R(1,100);
+    if(ev<=28&&m.min<88){// AÇÃO DO JOGADOR
+      const sit=pickSit();const sd=pick(SITS[sit]);
+      m._sit=sit;m._sd=sd;m._acts=getActs(G.p.pos,sit);m.phase='action';m.ac++;
+      m.log.push({min:m.min,text:`${m.min}' — ${sd.d}`,type:'action'});
+      if(m.scoutWatch&&R(1,100)<=40)m.log.push({min:m.min,text:`${m.min}' 🔍 O olheiro anota algo no caderno...`,type:'scout'});
+      switchTab('match');return}
+    if(ev<=38){if(R(1,100)<=G.p.clubStr*.3){m.tg++;m.log.push({min:m.min,text:`${m.min}' ⚽ Companheiro marca!`,type:'goal'})}}
+    else if(ev<=48){if(R(1,100)<=m.oppS*.3){m.og++;m.log.push({min:m.min,text:`${m.min}' ⚽ ${m.opp} marca...`,type:'miss'})}}
+    else if(ev<=60){const t=[`${m.min}' Boa jogada do ${G.p.club}`,`${m.min}' ${m.opp} pressiona`,`${m.min}' Falta`,`${m.min}' Escanteio`,`${m.min}' Dividida forte`];m.log.push({min:m.min,text:pick(t),type:'event'})}
+  }
+  finMatch();
+}
+
+const SITS={
+  near:[{d:'Dentro da área, de frente pro gol!',c:'Goleiro se posiciona.'},{d:'Cruzamento na área, você se posiciona!',c:'Zagueiros disputando.'},{d:'Tabelinha na entrada da área!',c:'Espaço para finalizar.'}],
+  far:[{d:'Bola no meio com espaço à frente.',c:'Companheiros fazem corridas.'},{d:'Contra-ataque! Campo aberto!',c:'Defesa adversária voltando.'},{d:'Saída rápida, livre no meio.',c:'Adversário desorganizado.'}],
+  mid:[{d:'Disputa no meio-campo.',c:'Adversário pressionando.'},{d:'Recebe de costas com marcador.',c:'Precisa decidir rápido.'}],
+  def:[{d:'Adversário avança pela sua zona!',c:'Perigo real se não agir.'},{d:'Bola dividida na defesa.',c:'Atacante disputa com você.'}]
+};
+
+function pickSit(){const p=G.p.pos;const r=R(1,100);
+  if(['ST','SS','CF','CAM','LW','RW'].includes(p))return r<=40?'near':r<=75?'far':'mid';
+  if(['CM','CDM'].includes(p))return r<=18?'near':r<=45?'far':r<=78?'mid':'def';
+  return r<=8?'near':r<=22?'far':r<=48?'mid':'def';
+}
+
+function getActs(pos,sit){
+  const a=G.p.a;const acts=[];
+  if(sit==='near'){
+    acts.push({t:'🎯 Chutar com força no canto',i:'Finalização+Força',df:'difficult',at:[a.technical.finishing,a.physical.strength],tp:'shoot',xc:'technical',xa:'finishing'});
+    acts.push({t:'🎯 Chutar colocado',i:'Finalização+Compostura',df:'difficult',at:[a.technical.finishing,a.mental.composure],tp:'shoot',xc:'technical',xa:'finishing'});
+    acts.push({t:'🤯 Cabeceio!',i:'Força+Posicionamento',df:'difficult',at:[a.physical.strength,a.technical.positioning],tp:'shoot',xc:'physical',xa:'strength'});
+    acts.push({t:'📐 Tocar pro companheiro livre',i:'Passe+Visão',df:'medium',at:[a.technical.passing,a.mental.gameVision],tp:'pass',xc:'technical',xa:'passing'});
+    acts.push({t:'🌀 Driblar o goleiro!',i:'Drible+Compostura',df:'veryDifficult',at:[a.technical.dribbling,a.mental.composure],tp:'dgoal',xc:'technical',xa:'dribbling'});
+    acts.push({t:'🎯 Bicicleta! (Espetacular)',i:'Finalização+Coragem',df:'veryDifficult',at:[a.technical.finishing,a.mental.bravery],tp:'bicycle',xc:'technical',xa:'finishing'});
+  } else if(sit==='far'){
+    acts.push({t:'🚀 Arrancar em velocidade',i:'Velocidade+Resistência',df:'medium',at:[a.physical.velocity,a.physical.stamina],tp:'run',xc:'physical',xa:'velocity'});
+    acts.push({t:'🌀 Driblar e avançar',i:'Drible+Velocidade',df:'difficult',at:[a.technical.dribbling,a.physical.velocity],tp:'dribble',xc:'technical',xa:'dribbling'});
+    acts.push({t:'📐 Lançamento longo',i:'Passe+Visão',df:'medium',at:[a.technical.passing,a.mental.gameVision],tp:'pass',xc:'technical',xa:'passing'});
+    acts.push({t:'🎯 Chute de longe!',i:'Finalização+Força',df:'veryDifficult',at:[a.technical.finishing,a.physical.strength],tp:'long',xc:'technical',xa:'finishing'});
+    acts.push({t:'📐 Tabela rápida',i:'Passe+Decisão',df:'medium',at:[a.technical.passing,a.mental.decisionMaking],tp:'wall',xc:'technical',xa:'passing'});
+  } else if(sit==='mid'){
+    acts.push({t:'💪 Proteger e girar',i:'Força+Compostura',df:'medium',at:[a.physical.strength,a.mental.composure],tp:'hold',xc:'physical',xa:'strength'});
+    acts.push({t:'📐 Passe de primeira',i:'Passe+Decisão',df:'medium',at:[a.technical.passing,a.mental.decisionMaking],tp:'pass',xc:'technical',xa:'passing'});
+    acts.push({t:'🌀 Driblar e sair',i:'Drible+Coragem',df:'difficult',at:[a.technical.dribbling,a.mental.bravery],tp:'dribble',xc:'technical',xa:'dribbling'});
+    acts.push({t:'🛡️ Desarme',i:'Força+Posicionamento',df:'medium',at:[a.physical.strength,a.technical.positioning],tp:'tackle',xc:'physical',xa:'strength'});
+  } else {
+    acts.push({t:'🛡️ Carrinho!',i:'Coragem+Velocidade',df:'difficult',at:[a.mental.bravery,a.physical.velocity],tp:'slide',xc:'mental',xa:'bravery'});
+    acts.push({t:'🛡️ Desarme em pé',i:'Força+Posicionamento',df:'medium',at:[a.physical.strength,a.technical.positioning],tp:'tackle',xc:'physical',xa:'strength'});
+    acts.push({t:'🧠 Antecipar',i:'Visão+Decisão',df:'medium',at:[a.mental.gameVision,a.mental.decisionMaking],tp:'intercept',xc:'mental',xa:'gameVision'});
+    acts.push({t:'🏃 Acompanhar',i:'Velocidade+Resistência',df:'easy',at:[a.physical.velocity,a.physical.stamina],tp:'track',xc:'physical',xa:'velocity'});
+  }
+  return acts;
+}
+
+function rMatchAction(el){
+  const m=G.curM,tg=m.tg+m.pg;
+  el.innerHTML=`<div class="mh"><div style="font-size:.82rem;color:var(--gold);margin-bottom:4px">${m.min}' — AO VIVO ${m.classico?'⭐':''}${m.scoutWatch?' 🔍':''}</div>
+    <div class="tms"><span class="tn">${m.home?G.p.club:m.opp}</span><span class="sc">${m.home?tg:m.og} - ${m.home?m.og:tg}</span><span class="tn">${m.home?m.opp:G.p.club}</span></div></div>
+    <div class="pitch"><div class="sit">${m._sd.d}</div><div class="ctx">${m._sd.c}</div></div>
+    <div class="card"><h3>⚡ Escolha sua ação:</h3>
+      <div style="display:flex;flex-direction:column;gap:8px">${m._acts.map((a,i)=>{
+        const pct=calcPct(a.df,a.at);const pc=pct>=65?'pct-h':pct>=40?'pct-m':'pct-l';
+        return`<div class="mab" onclick="doMA(${i})"><div class="at">${a.t}</div><div class="ai">${a.i}</div><div class="pct ${pc}">${pct}%</div></div>`}).join('')}
+      </div></div>
+    <div class="ml">${m.log.map(l=>`<div class="${l.type}">${l.text}</div>`).join('')}</div>`;
+}
+
+function doMA(i){
+  const m=G.curM,a=m._acts[i];
+  const ctx={home:m.home,strong:m.oppS>=75,weak:m.oppS<=45,pressure:m.min>=80};
+  const r=roll(a.df,a.at,ctx);
+  // Desabilita botões e mostra suspense no campo
+  document.querySelectorAll('.mab').forEach(b=>{b.style.pointerEvents='none';b.style.opacity='.3'});
+  const pitchEl=document.querySelector('.pitch');
+  if(pitchEl){pitchEl.innerHTML=`<div class="sit" style="animation:pulse .8s infinite">⚽ ${a.t.replace(/🎯|🌀|📐|💪|🛡️|🤯|🚀|🧠|🏃/g,'').trim()}...</div><div class="ctx" style="opacity:.6">Aguarde o resultado...</div>`}
+  setTimeout(()=>{
+    applyMatchAction(a,r,m);
+    G.p.energy=cl(G.p.energy-R(2,5),0,100);
+    m.phase='play';advMatch();
+  },R(800,1400));
+}
+
+function applyMatchAction(a,r,m){
+  if(r.ok){
+    if(['shoot','long','dgoal','bicycle'].includes(a.tp)){
+      m.pg++;m.tg++;m.rat+=2.0;
+      const how={shoot:'com classe',long:'DE FORA DA ÁREA',dgoal:'DRIBLOU O GOLEIRO',bicycle:'DE BICICLETA! GOLAÇO'}[a.tp];
+      m.log.push({min:m.min,text:`${m.min}' ⚽ GOOOOOL! ${G.p.name} marca ${how}! [${r.final}/${r.threshold}] 🎉`,type:'goal'});
+      addXP(a.xc,a.xa,4);addXP('mental','composure',1);
+      G.p.rel.fans=cl(G.p.rel.fans+R(3,8),0,100);G.p.rel.team=cl(G.p.rel.team+R(2,5),0,100);G.p.fanLove+=R(2,5);
+      // Comemoração
+      if(R(1,100)<=50)m.log.push({min:m.min,text:`${m.min}' ${G.p.name} corre até a torcida e comemora! ❤️`,type:'event'});
+    } else if(['pass','wall'].includes(a.tp)){
+      if(R(1,100)<=55){m.pa++;m.tg++;m.rat+=1.5;m.log.push({min:m.min,text:`${m.min}' 🎯 Assistência de ${G.p.name}! GOL! [${r.final}/${r.threshold}]`,type:'goal'});G.p.rel.team=cl(G.p.rel.team+R(2,5),0,100)}
+      else{m.rat+=.6;m.log.push({min:m.min,text:`${m.min}' 📐 Belo passe de ${G.p.name}! Criou perigo. [${r.final}/${r.threshold}]`,type:'action'})}
+      addXP(a.xc,a.xa,3);
+    } else if(['dribble','run'].includes(a.tp)){
+      m.rat+=.8;m.log.push({min:m.min,text:`${m.min}' 🌀 ${G.p.name} ${a.tp==='run'?'arranca':'dribla'}! Torcida vibra! [${r.final}/${r.threshold}]`,type:'action'});
+      addXP(a.xc,a.xa,3);G.p.rel.fans=cl(G.p.rel.fans+R(1,3),0,100);
+      if(R(1,100)<=40){m._sit='near';m._sd=pick(SITS.near);m._acts=getActs(G.p.pos,'near');m.log.push({min:m.min,text:`${m.min}' — Invadiu a área!`,type:'action'});m.phase='action';switchTab('match');return}
+    } else if(['tackle','slide','intercept','track'].includes(a.tp)){
+      m.rat+=.5;const d={slide:'CARRINHO perfeito',intercept:'antecipou a jogada',tackle:'desarme limpo',track:'acompanhou bem'}[a.tp];
+      m.log.push({min:m.min,text:`${m.min}' 🛡️ ${G.p.name} — ${d}! [${r.final}/${r.threshold}]`,type:'action'});
+      addXP(a.xc,a.xa,2);
+    } else if(a.tp==='hold'){m.rat+=.4;m.log.push({min:m.min,text:`${m.min}' 💪 ${G.p.name} protege a bola! [${r.final}/${r.threshold}]`,type:'action'});addXP(a.xc,a.xa,2)}
+  } else {
+    m.rat-=.4;G.p.rel.team=cl(G.p.rel.team-R(1,3),0,100);
+    const f={shoot:'chutou pra fora!',long:'bomba por cima!',dgoal:'tentou driblar, perdeu!',bicycle:'bicicleta... no vazio!',pass:'passe interceptado!',wall:'tabela falhou!',dribble:'perdeu no drible!',run:'escorregou!',tackle:'errou o desarme!',slide:'carrinho no vazio!',intercept:'leu errado!',track:'não acompanhou!',hold:'perdeu a dividida!'}[a.tp]||'falhou!';
+    m.log.push({min:m.min,text:`${m.min}' ❌ ${G.p.name} ${f} [${r.final}/${r.threshold}]`,type:'miss'});
+    addXP('mental','composure',1);
+    if(['tackle','slide','intercept','track'].includes(a.tp)&&R(1,100)<=25){m.og++;m.log.push({min:m.min,text:`${m.min}' ⚽ ${m.opp} aproveita e marca!`,type:'miss'});m.rat-=.5}
+  }
+}
+
+function finMatch(){
+  const m=G.curM;m.phase='done';m.rat=cl(m.rat,1,10);const tg=m.tg+m.pg;
+  const pt=G.league[m.pi],ot=G.league[m.oi];
+  pt.p++;ot.p++;pt.gf+=tg;pt.ga+=m.og;ot.gf+=m.og;ot.ga+=tg;
+  if(tg>m.og){pt.w++;pt.pts+=3;ot.l++}else if(tg<m.og){ot.w++;ot.pts+=3;pt.l++}else{pt.d++;pt.pts++;ot.d++;ot.pts++}
+  G.league.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
+  // Update top scorer
+  if(m.pg>0)ot.topGoals+=0; // opp top scorer random
+  G.league.forEach(t=>{if(!t.me&&R(1,100)<=30)t.topGoals+=R(0,2)});
+
+  G.p.apps++;G.p.sApps++;G.p.clubApps++;G.p.sGoals+=m.pg;G.p.sAssists+=m.pa;G.p.goals+=m.pg;G.p.assists+=m.pa;
+  const xm=m.rat>=8?2:m.rat>=7?1.5:1;
+  addXP('technical','positioning',Math.floor(2*xm));if(m.pg>0)addXP('technical','finishing',Math.floor(3*xm));
+  if(tg>m.og)G.p.morale=cl(G.p.morale+R(5,12),0,100);else if(tg<m.og)G.p.morale=cl(G.p.morale-R(3,8),0,100);
+  G.p.followers+=Math.floor(m.rat*R(100,500)+m.pg*R(500,2000));
+  G.p.energy=cl(G.p.energy-R(10,18),0,100);
+  // Reputation
+  const repGain=Math.floor(m.rat-5)+(m.pg*3)+(m.pa*2)+(m.classico?3:0)+(m.scoutWatch?2:0);
+  G.p.reputation=cl(G.p.reputation+repGain,0,100);
+  // Coach trust
+  G.p.rel.coach=cl(G.p.rel.coach+Math.floor((m.rat-6)*3),0,100);
+  G.p.coachTrust=cl(G.p.coachTrust+Math.floor((m.rat-6)*2),0,100);
+  if(G.p.coachTrust>=60&&!G.p.starter){G.p.starter=true;log('Virou TITULAR!');notify('TITULAR!','ok')}
+  if(G.p.coachTrust<40&&G.p.starter){G.p.starter=false;log('Voltou pro banco...');notify('Perdeu a titularidade.','err')}
+  // Fan love
+  G.p.fanLove+=m.pg*3+m.pa*2+Math.floor(m.rat-5);checkNickname();
+  // Scout
+  if(m.scoutWatch&&m.rat>=7)genScoutNews();
+  // Achievements
+  // Gols
+  if(m.pg>0)checkAch('fg');
+  if(m.pg>=3)checkAch('hat');
+  if(G.p.sGoals>=5)checkAch('5g');if(G.p.sGoals>=10)checkAch('10g');
+  if(G.p.sGoals>=20)checkAch('20g');if(G.p.sGoals>=30)checkAch('30g');
+  if(G.p.goals>=50)checkAch('50g');if(G.p.goals>=100)checkAch('100g');if(G.p.goals>=200)checkAch('200g');
+  // Assistências
+  if(m.pa>0)checkAch('fa');if(G.p.sAssists>=10)checkAch('10a');if(G.p.assists>=50)checkAch('50a');
+  // Jogos
+  if(G.p.apps>=10)checkAch('10j');if(G.p.apps>=50)checkAch('50j');
+  if(G.p.apps>=100)checkAch('100j');if(G.p.apps>=200)checkAch('200j');
+  if(G.p.clubApps>=200)checkAch('leg');
+  // Nota
+  if(m.rat>=9)checkAch('n9');
+  // Titular
+  if(G.p.coachTrust>=90)checkAch('tit');
+  // Torcida
+  if(G.p.rel.fans>=90)checkAch('amado');
+  // News
+  if(m.rat>=8)G.news.unshift({headline:`⭐ ${G.p.name} brilha com nota ${m.rat.toFixed(1)} contra o ${m.opp}!`,body:`${m.pg} gols e ${m.pa} assistências na partida.`,hot:true});
+  else if(m.rat<=4)G.news.unshift({headline:`📉 ${G.p.name} decepciona contra o ${m.opp}`,body:`Nota ${m.rat.toFixed(1)}. Torcida cobrou.`,hot:false});
+  addPlayerToTopScorers();
+  const res=tg>m.og?'VITÓRIA':tg<m.og?'DERROTA':'EMPATE';
+  log(`${res} vs ${m.opp} (${tg}-${m.og}) | Nota:${m.rat.toFixed(1)} | G:${m.pg} A:${m.pa}`);
+  m.log.push({min:90,text:`90' — FINAL! ${G.p.club} ${tg} x ${m.og} ${m.opp}`,type:'event'});
+  uh();switchTab('match');
+}
+
+function rMatchResult(el){
+  const m=G.curM,tg=m.tg+m.pg;
+  const res=tg>m.og?'VITÓRIA!':tg<m.og?'DERROTA':'EMPATE';
+  const rc=tg>m.og?'var(--green)':tg<m.og?'var(--red)':'var(--orange)';
+  el.innerHTML=`<div class="mh"><div style="color:${rc};font-family:'Oswald';font-size:1.4rem;margin-bottom:6px">${res}</div>
+    <div class="tms"><span class="tn">${m.home?G.p.club:m.opp}</span><span class="sc">${m.home?tg:m.og} - ${m.home?m.og:tg}</span><span class="tn">${m.home?m.opp:G.p.club}</span></div></div>
+    <div class="cg"><div class="card"><h3>📊 Atuação</h3>
+      <div style="text-align:center;margin-bottom:14px"><div style="font-size:2.8rem;font-family:'Oswald';color:${m.rat>=7?'var(--green)':m.rat>=5?'var(--gold)':'var(--red)'}">${m.rat.toFixed(1)}</div><div style="font-size:.8rem;color:#888">NOTA</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.88rem"><div>⚽ Gols: <b style="color:var(--gold)">${m.pg}</b></div><div>🎯 Assist: <b style="color:var(--gold)">${m.pa}</b></div></div>
+      ${m.scoutWatch?'<div style="color:#e0a0ff;font-size:.82rem;margin-top:10px;font-style:italic">🔍 O olheiro viu tudo!</div>':''}</div>
+    <div class="card"><h3>📋 Narração</h3><div class="ml" style="max-height:280px">${m.log.map(l=>`<div class="${l.type}">${l.text}</div>`).join('')}</div></div></div>
+    <div style="text-align:center;margin-top:14px"><button class="btn" onclick="G.curM=null;switchTab('news')">Continuar</button></div>`;
+}
+
+// ===== NOTÍCIAS (ABA PRINCIPAL) =====
+function rNews(el){
+  const p=G.p,lg=LEAGUES[G.lk],o=ovr();
+  const starterTxt=p.coachTrust>=60?'<span class="starter-badge titular">TITULAR</span>':'<span class="starter-badge reserva">RESERVA</span>';
+  const remaining=actionsLeft();
+  const c=v=>v>=75?'var(--green)':v>=50?'var(--gold)':v>=30?'var(--orange)':'var(--red)';
+
+  // Guia do agente — próxima ação recomendada
+  let agentTip='';
+  if(G.curM&&G.curM.phase!=='done') agentTip='🕴️ "Ei, você tem uma partida rolando! Vai lá!"';
+  else if(remaining>0){
+    if(!G.au.train) agentTip='🕴️ "Bora treinar? Escolha um atributo pra evoluir."';
+    else if(!G.au.play&&G.matchOn) agentTip='🕴️ "Tem jogo hoje! Hora de entrar em campo."';
+    else if(!G.au.media) agentTip='🕴️ "Que tal dar uma entrevista? Sua imagem agradece."';
+    else if(!G.au.rest) agentTip='🕴️ "Descansa um pouco, não quer se lesionar né?"';
+    else if(!G.au.personal) agentTip='🕴️ "Cuida da vida pessoal — família, finanças..."';
+  } else agentTip='🕴️ "Tudo feito essa semana! Pode avançar. ⏩"';
+
+  el.innerHTML=`
+    <!-- BARRA DO AGENTE -->
+    <div class="card" style="border-color:var(--gold);background:rgba(226,183,20,.08)">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+        <div style="font-size:.95rem">${agentTip}</div>
+        <button class="btn btn-g btn-sm" onclick="smartAdvance()">⏩ Próximo Passo</button>
+      </div>
+    </div>
+
+    <!-- STATUS RÁPIDO -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+        <div>
+          <span style="font-family:'Oswald';font-size:1.1rem;color:var(--gold)">${p.name}</span>
+          ${p.nickname?'<span class="nickname" style="margin-left:6px">"'+p.nickname+'"</span>':''}
+          ${starterTxt}
+          <div style="font-size:.82rem;color:#aaa">${p.club} — ${lg.name} | ${PL[p.pos]} | ${p.age}a | Nv${p.lvl} | Geral: <b style="color:${c(o)}">${o}</b></div>
+        </div>
+        <div style="display:flex;gap:14px;font-size:.82rem">
+          <span>⚽ ${p.sGoals}G</span><span>🎯 ${p.sAssists}A</span><span>📋 ${p.sApps}J</span>
+          <span>⚡ ${Math.round(p.energy)}%</span><span>😊 ${Math.round(p.morale)}%</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+        ${[['train','🏋️'],['play','⚽'],['media','📺'],['rest','😴'],['personal','🏡']].map(([k,ic])=>
+          `<span style="padding:3px 10px;border:1px solid ${G.au[k]?'var(--green)':'var(--brd)'};background:${G.au[k]?'rgba(46,204,113,.12)':'transparent'};font-size:.78rem">${ic} ${G.au[k]?'✅':''}</span>`
+        ).join('')}
+      </div>
+    </div>
+
+    <!-- FEED DE NOTÍCIAS -->
+    <div class="card"><h3>📰 Jornal Esportivo — Semana ${G.week}, Temporada ${G.season}</h3>
+      <div style="max-height:500px;overflow-y:auto">${G.news.map(n=>`<div class="news-item${n.hot?' hot':''}${n.scout?' scout-news':''}"><div class="date">${lg.name} — T${G.season} S${G.week}</div><div class="headline">${n.headline}</div><div class="body">${n.body||''}</div></div>`).join('')||'<div style="color:#666">Nenhuma notícia ainda. Comece a jogar!</div>'}</div>
+    </div>`;
+}
+
+// ===== ARTILHARIA =====
+function rScorers(el){
+  el.innerHTML=`<div class="card"><h3>⚽ Artilharia — ${LEAGUES[G.lk].name}</h3>
+    <table class="lt"><tr><th>#</th><th>Jogador</th><th>Time</th><th>Gols</th></tr>
+    ${G.topScorers.map((s,i)=>`<tr style="${s.name===G.p.name?'background:rgba(226,183,20,.1)':''}"><td>${i+1}</td><td style="${s.name===G.p.name?'color:var(--gold);font-weight:700':''}">${s.name}${s.name===G.p.name?' ★':''}</td><td>${s.team}</td><td style="font-weight:700;color:var(--gold)">${s.goals}</td></tr>`).join('')}
+    </table></div>`;
+}
+
+// ===== CLASSIFICAÇÃO =====
+function rLeague(el){
+  el.innerHTML=`<div class="card"><h3>🏆 ${LEAGUES[G.lk].name} — T${G.season}</h3>
+    <table class="lt"><tr><th>#</th><th>Time</th><th>J</th><th>V</th><th>E</th><th>D</th><th>GP</th><th>GC</th><th>SG</th><th>PTS</th></tr>
+    ${G.league.map((t,i)=>`<tr class="${t.me?'pt':''}"><td>${i+1}</td><td style="${t.me?'color:var(--gold);font-weight:700':''}">${t.n}${t.me?' ★':''}</td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td>${t.gf-t.ga}</td><td style="font-weight:700;color:var(--gold)">${t.pts}</td></tr>`).join('')}</table></div>`;
+}
+
+// ===== AGENTE =====
+function rAgent(el){
+  const p=G.p;
+  const totalSponsor=p.sponsors.reduce((s,x)=>s+x.weekly,0);
+  el.innerHTML=`<div class="card"><h3>🕴️ Seu Agente</h3>
+    <p style="color:#aaa;font-size:.88rem">Seu agente trabalha nos bastidores buscando oportunidades. Relação: <b style="color:var(--gold)">${p.rel.agent}/100</b></p>
+    <p style="color:#888;font-size:.82rem;margin-top:4px">💡 Propostas de patrocínio chegam conforme sua reputação cresce. Seu agente te avisa quando aparecer algo.</p>
+
+    <h4 style="color:var(--gold);margin:14px 0 8px">📝 Patrocínios Ativos (${p.sponsors.length})</h4>
+    ${p.sponsors.length>0?p.sponsors.map(s=>`<div style="background:var(--sec);border:1px solid var(--brd);padding:10px 14px;margin-bottom:6px;display:flex;justify-content:space-between"><div><b style="color:var(--gold)">${s.brand}</b> <span style="color:#888;font-size:.8rem">(${s.type})</span></div><div style="color:var(--green)">${fm(s.weekly)}/sem</div></div>`).join('')+'<div style="text-align:right;font-size:.85rem;color:var(--gold);margin-top:6px"><b>Total: ${fm(totalSponsor)}/semana</b></div>':'<p style="color:#666;font-size:.85rem">Nenhum patrocínio. Jogue bem e aumente sua reputação — as marcas vão te procurar!</p>'}
+
+    <h4 style="color:var(--gold);margin:14px 0 8px">🔍 Olheiros Interessados</h4>
+    ${p.scoutInterest.length>0?p.scoutInterest.map(s=>`<div style="background:var(--sec);border:1px solid var(--brd);padding:8px 14px;margin-bottom:6px;font-size:.85rem;color:#e0a0ff">🔍 <b>${s.club}</b> (${LEAGUES[s.league].name}) — observado ${s.times}x</div>`).join(''):'<p style="color:#666;font-size:.85rem">Nenhum olheiro registrado ainda.</p>'}
+
+    <h4 style="color:var(--gold);margin:14px 0 8px">📊 Seu Perfil de Mercado</h4>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.85rem">
+      <div class="ar"><span class="an">Reputação</span><span style="color:var(--gold)">${p.reputation}/100 ${'⭐'.repeat(Math.min(5,Math.floor(p.reputation/20)))}</span></div>
+      <div class="ar"><span class="an">Seguidores</span><span style="color:var(--gold)">${ff(p.followers)}</span></div>
+      <div class="ar"><span class="an">Imagem Pública</span><span style="color:var(--gold)">${p.a.social.publicImage}</span></div>
+      <div class="ar"><span class="an">Geral</span><span style="color:var(--gold)">${ovr()}</span></div>
+    </div>
+    <p style="color:#888;font-size:.78rem;margin-top:10px">${p.reputation<20?'🔹 Ainda desconhecido. Continue jogando bem!':p.reputation<40?'🔹 Começando a ser notado. Marcas locais e nacionais podem te procurar.':p.reputation<60?'🔸 Destaque regional! Marcas grandes estão de olho.':p.reputation<80?'🔶 Craque reconhecido! Marcas mundiais começam a aparecer.':'🌟 Estrela internacional! As maiores marcas do mundo querem você!'}</p>
+  </div>`;
+}
+
+function genSponsorOffers(){
+  // Função mantida por compatibilidade mas não gera mais lista — propostas vêm via evento
+  const offers=[];const rep=G.p.reputation;
+  SPONSOR_BRANDS.forEach(b=>{
+    if(G.p.sponsors.find(s=>s.brand===b.name))return;
+    if(rep>=b.minRep&&R(1,100)<=15){
+      const mult=1+LEAGUES[G.lk].tier*.2;
+      offers.push({brand:b.name,type:b.type,weekly:Math.round(b.base*mult),imgBonus:b.imgBonus});
+    }
+  });
+  return offers.slice(0,3);
+}
+
+function acceptSponsor(brand,type,weekly,img){
+  G.p.sponsors.push({brand,type,weekly});G.p.endorse+=weekly;
+  G.p.a.social.publicImage=cl(G.p.a.social.publicImage+img,0,99);
+  // Torcida fica orgulhosa do patrocínio
+  G.p.rel.fans=cl(G.p.rel.fans+R(3,8),0,100);
+  G.p.rel.team=cl(G.p.rel.team+R(1,4),0,100);
+  G.p.morale=cl(G.p.morale+R(2,5),0,100);
+  G.p.fanLove+=R(2,5);checkNickname();
+  G.news.unshift({headline:`📢 ${G.p.name} fecha patrocínio com ${brand}!`,body:`Contrato de ${fm(weekly)}/semana. Torcida do ${G.p.club} comemora!`,hot:true});
+  log('Patrocínio: '+brand);notify(brand+' assinado! Torcida aprova!','ok');uh();switchTab('agent');
+}
+
+// ===== TRANSFERÊNCIAS =====
+function rTransfers(el){
+  // Transferências não têm aba própria, redireciona pro agente
+  rAgent(el);
+}
+
+function genOffers(){
+  G.offers=[];const o=ovr(),ct=LEAGUES[G.lk].tier,rep=G.p.reputation;
+  const possible=LO.filter(k=>{const t=LEAGUES[k].tier;return(t>=ct&&t<=ct+2)||(t===ct&&k!==G.lk)}).filter(k=>{const t=LEAGUES[k].tier;if(t-ct>=2)return rep>=50&&o>=50;if(t-ct>=1)return rep>=25&&o>=35;return true});
+  const n=rep>=60?R(1,4):rep>=30?R(0,3):R(0,1);
+  for(let i=0;i<n;i++){const lk=pick(possible);if(!lk)continue;const lg=LEAGUES[lk];
+    const cands=lg.teams.filter(t=>t.n!==G.p.club&&Math.abs(t.s-o)<25);if(!cands.length)continue;
+    const team=pick(cands);const tb=lg.tier-ct;
+    G.offers.push({club:team.n,str:team.s,lk,ln:lg.name,country:lg.country,tier:lg.tier,wage:Math.round(lg.wage*(1+tb*.5+R(0,2))),sign:R(5000,200000)*(1+tb),len:R(52,208)});
+  }
+}
+
+function accOffer(i){
+  const o=G.offers[i];const old=G.lk;
+  G.p.club=o.club;G.p.clubStr=o.str;G.p.wage=o.wage;G.p.money+=o.sign;G.p.earned+=o.sign;
+  G.p.contract={wks:o.len,wage:o.wage,club:o.club};G.p.clubApps=0;
+  G.p.rel.coach=50;G.p.rel.team=40;G.p.rel.fans=20;G.p.coachTrust=45;G.p.starter=false;G.p.fanLove=0;
+  // Nova torcida pode dar novo apelido
+  G.p.nickname=null;
+  G.lk=o.lk;G.league=genT(o.lk,o.club);G.offers=[];
+  const eu=['portugal','ligue1','serieA_ita','laliga','premier'];
+  if(eu.includes(o.lk))checkAch('eu');
+  if(['ligue1','serieA_ita','laliga','premier'].includes(o.lk))checkAch('t5');
+  if(o.lk==='premier')checkAch('prem');
+  if(o.lk==='serieB')checkAch('serB');
+  if(o.lk==='serieA')checkAch('serA');
+  if(o.lk==='argentina')checkAch('arg');
+  if(o.tier>LEAGUES[old].tier)checkAch('up');
+  G.news.unshift({headline:`🔄 ${G.p.name} é o novo reforço do ${o.club}!`,body:`Transferido por ${fm(o.sign)} de luvas.`,hot:true});
+  log('Transferido: '+o.club+' ('+o.ln+')');notify('Bem-vindo ao '+o.club+'!','ok');
+  genTopScorers();uh();switchTab('transfers');
+}
+function decOffer(i){G.offers.splice(i,1);notify('Recusada.');switchTab('transfers')}
+
+// ===== RELAÇÕES =====
+function rRels(el){
+  const r=G.p.rel,bar=(v)=>`<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><div style="flex:1;height:6px;background:rgba(255,255,255,.1);border-radius:3px"><div style="height:100%;width:${v}%;background:${v>=70?'var(--green)':v>=40?'var(--gold)':'var(--red)'};border-radius:3px"></div></div><span style="font-family:'Oswald';color:var(--gold);font-size:.85rem">${v}</span></div>`;
+  el.innerHTML=`<div class="card"><h3>🤝 Relacionamentos</h3>
+    ${[['🕴️','Agente','Contratos e patrocínios',r.agent],['👨‍👩‍👧','Pais','Apoio emocional',r.parents],['📋','Técnico','Confiança = titularidade ('+G.p.coachTrust+')',r.coach],['⚽','Companheiros','Entrosamento e química',r.team],['❤️','Torcida','Amor dos fãs'+(G.p.nickname?' — "'+G.p.nickname+'"':''),r.fans]].map(([ic,nm,ds,v])=>`<div class="rel-card"><div style="font-size:2.2rem">${ic}</div><div style="flex:1"><h4 style="color:var(--gold);font-size:.9rem">${nm}</h4><p style="font-size:.78rem;color:#999">${ds}</p>${bar(v)}</div></div>`).join('')}
+    <div style="margin-top:12px;font-size:.82rem;color:#aaa"><b>Reputação Nacional:</b> ${G.p.reputation}/100 ${'⭐'.repeat(Math.min(5,Math.floor(G.p.reputation/20)))}</div>
+  </div>`;
+}
+
+// ===== FINANÇAS =====
+function rFin(el){
+  const p=G.p,wi=p.wage+p.endorse+p.biz;
+  el.innerHTML=`<div class="card"><h3>💰 Finanças</h3>
+    <div style="text-align:center;margin-bottom:16px"><div style="font-size:2.2rem;font-family:'Oswald';color:var(--green)">${fm(p.money)}</div><div style="font-size:.8rem;color:#888">SALDO</div></div>
+    <div class="cg"><div><h4 style="color:var(--green);margin-bottom:10px">Receita Semanal</h4>
+      ${[['Salário',p.wage],['Patrocínios',p.endorse],['Negócios',p.biz]].map(([l,v])=>`<div class="ar"><span class="an">${l}</span><span style="color:var(--green)">${fm(v)}</span></div>`).join('')}
+      <div class="ar" style="border-top:1px solid var(--brd);padding-top:6px;margin-top:6px"><span class="an"><b>Total</b></span><span style="color:var(--gold);font-weight:700">${fm(wi)}</span></div></div>
+    <div><h4 style="color:var(--gold);margin-bottom:10px">Carreira</h4>
+      <div class="ar"><span class="an">Total Ganho</span><span style="color:var(--gold)">${fm(p.earned)}</span></div>
+      <div class="ar"><span class="an">Itens</span><span style="color:var(--gold)">${p.owned.length}</span></div></div></div></div>`;
+}
+
+// ===== ATRIBUTOS =====
+function rAttrs(el){
+  const a=G.p.a,x=G.p.xp,c=v=>v>=75?'var(--green)':v>=50?'var(--gold)':v>=30?'var(--orange)':'var(--red)';
+  function rg(t,cat,at){return`<div><h4 style="color:var(--gold);margin-bottom:10px;font-size:.9rem;border-bottom:1px solid var(--brd);padding-bottom:4px">${t}</h4>${Object.entries(at).map(([k,v])=>`<div class="ar"><span class="an">${AL[k]||k}</span><div class="abc"><div class="ab" style="width:${v}%;background:${c(v)}"></div></div><span class="av" style="color:${c(v)}">${v}</span><span style="font-size:.65rem;color:#555;width:30px;text-align:right">${(x[cat]?x[cat][k]:0)||0}/10</span></div>`).join('')}</div>`}
+  el.innerHTML=`<div class="card"><h3>📊 Atributos — Geral: ${ovr()}</h3><div class="cg">${rg('⚡ Físico','physical',a.physical)}${rg('🎯 Técnico','technical',a.technical)}${rg('🧠 Mental','mental',a.mental)}${rg('🤝 Social','social',a.social)}${rg('📋 Pessoal','personal',a.personal)}</div></div>`;
+}
+
+// ===== LOJA =====
+function rShop(el){
+  el.innerHTML=`<div class="card"><h3>🛒 Loja</h3><p style="color:#aaa;margin-bottom:14px;font-size:.88rem">Saldo: <b style="color:var(--green)">${fm(G.p.money)}</b></p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">${G.shop.map((it,i)=>`<div style="background:var(--sec);border:1px solid var(--brd);padding:14px;text-align:center;${it.ow?'opacity:.5':''}"><div style="font-size:2.2rem;margin-bottom:6px">${it.ic}</div><div style="font-family:'Oswald';color:var(--gold);margin-bottom:3px;font-size:.9rem">${it.n}</div><div style="color:var(--green);font-size:.85rem;margin-bottom:6px">${it.ow?'✅':fm(it.pr)}</div><div style="font-size:.7rem;color:#999">+${it.img} Img, +${it.mor} Moral${it.inc?', +'+fm(it.inc)+'/sem':''}</div>${!it.ow?`<button class="btn btn-sm btn-g" style="margin-top:6px" onclick="buyIt(${i})" ${G.p.money<it.pr?'disabled style="margin-top:6px;opacity:.4"':''}>Comprar</button>`:''}</div>`).join('')}</div></div>`;
+}
+function buyIt(i){const it=G.shop[i];if(it.ow||G.p.money<it.pr)return;G.p.money-=it.pr;it.ow=1;G.p.owned.push(it.id);G.p.a.social.publicImage=cl(G.p.a.social.publicImage+it.img,0,99);G.p.morale=cl(G.p.morale+it.mor,0,100);if(it.inc)G.p.biz+=it.inc;log('Comprou '+it.n);notify(it.n+' ✅','ok');uh();switchTab('shop')}
+
+// ===== CONQUISTAS =====
+function rAchs(el){
+  el.innerHTML=`<div class="card"><h3>🏅 Conquistas</h3><div class="cg">${G.achs.map(a=>`<div style="background:var(--sec);border:1px solid ${a.ok?'var(--green)':'var(--brd)'};padding:14px;display:flex;align-items:center;gap:10px;${a.ok?'':'opacity:.5'}"><div style="font-size:1.8rem">${a.i}</div><div><div style="font-family:'Oswald';color:${a.ok?'var(--green)':'var(--gold)'};font-size:.9rem">${a.n} ${a.ok?'✅':'🔒'}</div><div style="font-size:.75rem;color:#999">${a.d}</div></div></div>`).join('')}</div></div>`;
+}
+function checkAch(id){const a=G.achs.find(x=>x.id===id);if(a&&!a.ok){a.ok=1;notify('🏅 '+a.n+'!','ok');log('Conquista: '+a.n)}}
+
+// ===== AVANÇAR SEMANA =====
+function advWeek(){
+  const wi=G.p.wage+G.p.endorse+G.p.biz;G.p.money+=wi;G.p.earned+=wi;G.p.contract.wks--;
+  if(G.p.injured>0)G.p.injured--;G.p.energy=cl(G.p.energy+R(5,10),0,100);
+  simOther();
+  if(R(1,100)<=20)trigEv();
+  // Rumors
+  if(R(1,100)<=15&&G.p.reputation>=20){
+    const lk=pick(LO.filter(k=>LEAGUES[k].tier>LEAGUES[G.lk].tier));
+    if(lk){const t=pick(LEAGUES[lk].teams);G.rumors.push({club:t.n,league:lk});
+    G.news.unshift({headline:`💬 RUMOR: ${t.n} (${LEAGUES[lk].name}) estaria interessado em ${G.p.name}`,body:'Fontes do clube confirmam conversas iniciais.',hot:true});
+    G.p.morale=cl(G.p.morale+R(2,5),0,100);}
+  }
+  // Youth selection
+  if(G.p.nat==='Brasil'&&G.p.age<=21&&G.p.reputation>=25&&R(1,100)<=15&&!G.p.youthCaps[G.p.age]){
+    const cat=G.p.age<=16?'Sub-16':G.p.age<=17?'Sub-17':G.p.age<=18?'Sub-18':G.p.age<=19?'Sub-19':G.p.age<=20?'Sub-20':'Sub-21';
+    G.p.youthCaps[G.p.age]=cat;checkAch('sel');
+    G.news.unshift({headline:`🇧🇷 ${G.p.name} convocado para Seleção ${cat}!`,body:'O jogador do '+G.p.club+' foi chamado pela CBF.',hot:true});
+    log('Convocado: Seleção '+cat+'!');notify('🇧🇷 Seleção '+cat+'!','ok');G.p.reputation=cl(G.p.reputation+5,0,100);
+  }
+  if(G.p.morale<50)G.p.morale=cl(G.p.morale+2,0,100);
+  // Dinheiro
+  if(G.p.money>=100000)checkAch('100k');if(G.p.money>=500000)checkAch('500k');
+  if(G.p.earned>=1000000)checkAch('1m');if(G.p.earned>=10000000)checkAch('10m');
+  // Seguidores
+  if(G.p.followers>=10000)checkAch('10kf');if(G.p.followers>=100000)checkAch('100kf');if(G.p.followers>=1000000)checkAch('1mf');
+  // Reputação
+  if(G.p.reputation>=50)checkAch('rep50');if(G.p.reputation>=80)checkAch('rep80');
+  // Idade
+  if(G.p.age>=30)checkAch('age30');
+  // Patrocínios
+  if(G.p.sponsors.length>=1)checkAch('sp1');if(G.p.sponsors.length>=3)checkAch('sp3');
+  // Olheiros
+  if(G.p.scoutInterest.length>=5)checkAch('scout5');
+  // Negócios
+  if(G.p.biz>0)checkAch('biz');
+  G.week++;
+  if(G.week>G.mw){endSeason();return}
+  else{G.au={train:0,play:0,media:0,rest:0,personal:0};G.wa=5;G.matchOn=R(1,100)<=75;G.curM=null}
+  if(G.week%3===0)genNews();
+  uh();
+
+  // === FILA DE EVENTOS INTERRUPTIVOS ===
+  G._eventQueue=[];
+
+  // Patrocínio novo? Só 1 por vez, a cada ~4-6 semanas, proporcional à reputação
+  if(!G._lastSponsorWeek)G._lastSponsorWeek=0;
+  const weeksSinceSponsor=G.week+(G.season-1)*38-G._lastSponsorWeek;
+  if(weeksSinceSponsor>=4&&G.p.reputation>=5&&R(1,100)<=10+G.p.reputation/5){
+    const offer=genOneSponsorOffer();
+    if(offer){G._eventQueue.push({type:'sponsor',data:offer});G._lastSponsorWeek=G.week+(G.season-1)*38}
+  }
+
+  // Olheiro interessado? Agente avisa!
+  if(G.p.scoutInterest.length>0&&R(1,100)<=25){
+    const si=G.p.scoutInterest[G.p.scoutInterest.length-1];
+    G._eventQueue.push({type:'scout',data:si});
+  }
+
+  // Rumor quente? Agente comenta!
+  if(G.rumors.length>0&&R(1,100)<=20){
+    const rum=G.rumors[G.rumors.length-1];
+    G._eventQueue.push({type:'rumor',data:rum});
+  }
+
+  // Transferência nova disponível?
+  if(G.offers.length===0)genOffers();
+  if(G.offers.length>0&&R(1,100)<=30){
+    G._eventQueue.push({type:'transfer',data:G.offers[0]});
+  }
+
+  // Processa fila de eventos
+  processEventQueue();
+}
+
+function genOneSponsorOffer(){
+  const rep=G.p.reputation;
+  // Filtra marcas que o jogador ainda não tem e que ele tem reputação suficiente
+  const available=SPONSOR_BRANDS.filter(b=>!G.p.sponsors.find(s=>s.brand===b.name)&&rep>=b.minRep);
+  if(available.length===0)return null;
+  // Prioriza marcas do tier mais alto que o jogador alcança (mas pode vir de tiers menores)
+  const maxTier=Math.max(...available.map(b=>b.tier));
+  // 70% de chance de vir do tier mais alto disponível, 30% de tiers menores
+  const pool=R(1,100)<=70?available.filter(b=>b.tier===maxTier):available;
+  const b=pick(pool);
+  const mult=1+LEAGUES[G.lk].tier*.2;
+  return{brand:b.name,type:b.type,weekly:Math.round(b.base*mult),imgBonus:b.imgBonus,tier:b.tier};
+}
+
+function processEventQueue(){
+  if(!G._eventQueue||G._eventQueue.length===0){switchTab('news');return}
+  const ev=G._eventQueue.shift();
+  switch(ev.type){
+    case 'sponsor': showSponsorEvent(ev.data); break;
+    case 'scout': showScoutEvent(ev.data); break;
+    case 'rumor': showRumorEvent(ev.data); break;
+    case 'transfer': showTransferEvent(ev.data); break;
+    default: processEventQueue();
+  }
+}
+
+function showSponsorEvent(offer){
+  const tierDesc={1:'uma marca local',2:'uma marca nacional',3:'uma marca grande',4:'uma marca MUNDIAL'}[offer.tier||1]||'uma marca';
+  const tierEmoji={1:'🏪',2:'🇧🇷',3:'🏢',4:'🌍'}[offer.tier||1]||'📦';
+  showModal('🕴️ Seu Agente Ligou!',
+    `"E aí, ${G.p.name.split(' ')[0]}! Tenho uma novidade pra você!"\n\n`+
+    `${tierEmoji} A <b style="color:var(--gold)">${offer.brand}</b> (${offer.type}) — ${tierDesc} — quer fechar um contrato de patrocínio com você!\n\n`+
+    `💰 Valor: <b style="color:var(--green)">${fm(offer.weekly)}/semana</b>\n`+
+    `📈 Bônus de imagem: <b>+${offer.imgBonus}</b>\n\n`+
+    `"${offer.tier>=3?'Esse é grande, hein! Mostra que você tá crescendo no mercado!':offer.tier>=2?'Tá subindo de patamar! Boa marca nacional.':'É o começo! Todo grande jogador começou assim.'}"`,
+    [
+      {t:'✅ Aceitar o patrocínio!',e:()=>{
+        acceptSponsor(offer.brand,offer.type,offer.weekly,offer.imgBonus);
+        processEventQueue();
+      }},
+      {t:'🤔 Quanto tempo de contrato?',e:()=>{
+        showModal('🕴️ Agente',`"O contrato é por 1 temporada, renovável. ${fm(offer.weekly)} por semana direto na conta! A ${offer.brand} tá de olho em você desde aquele jogo que você brilhou."\n\n"Aceita ou não?"`,
+          [{t:'✅ Fechar negócio!',e:()=>{acceptSponsor(offer.brand,offer.type,offer.weekly,offer.imgBonus);processEventQueue()}},
+           {t:'❌ Vou pensar...',e:()=>{notify('Proposta recusada.');processEventQueue()}}]);
+      }},
+      {t:'💰 Pedir valor maior',e:()=>{
+        if(R(1,100)<=30+G.p.reputation/3){
+          const newWeekly=Math.round(offer.weekly*1.4);
+          showModal('🕴️ Agente',`"Consegui! A ${offer.brand} topou pagar <b style="color:var(--green)">${fm(newWeekly)}/semana</b>! Fechou?"`,
+            [{t:'✅ Agora sim!',e:()=>{acceptSponsor(offer.brand,offer.type,newWeekly,offer.imgBonus);processEventQueue()}},
+             {t:'❌ Ainda não quero',e:()=>{notify('Recusou.');processEventQueue()}}]);
+        } else {
+          showModal('🕴️ Agente',`"Tentei negociar, mas a ${offer.brand} não topou subir o valor. É ${fm(offer.weekly)}/sem ou nada. O que diz?"`,
+            [{t:'✅ Aceito o original',e:()=>{acceptSponsor(offer.brand,offer.type,offer.weekly,offer.imgBonus);processEventQueue()}},
+             {t:'❌ Recusar',e:()=>{notify('Recusou.');processEventQueue()}}]);
+        }
+      }},
+      {t:'❌ Não tenho interesse',e:()=>{notify('Proposta de patrocínio recusada.');processEventQueue()}}
+    ]
+  );
+}
+
+function showScoutEvent(si){
+  const lg=LEAGUES[si.league];
+  showModal('🕴️ Agente — Olheiro Detectado!',
+    `"Olha só, ${G.p.name.split(' ')[0]}! Meus contatos me disseram que um olheiro do <b style="color:var(--gold)">${si.club}</b> (${lg.name}, ${lg.country}) esteve te observando!"\n\n`+
+    `"Essa é a <b>${si.times}ª vez</b> que ele aparece nos jogos. Isso é sério!"\n\n`+
+    `"O que você quer que eu faça?"`,
+    [
+      {t:'🤩 Ótimo! Fala pro olheiro que tenho interesse!',e:()=>{
+        G.p.reputation=cl(G.p.reputation+2,0,100);
+        G.news.unshift({headline:`📰 ${G.p.name} demonstra interesse no ${si.club}`,body:'O agente do jogador sinalizou abertura para negociação.',hot:true});
+        notify('Interesse sinalizado!','ok');
+        processEventQueue();
+      }},
+      {t:'😎 Deixa eles virem atrás, não vou me queimar',e:()=>{
+        G.p.a.mental.composure+=1;
+        G.p.rel.fans=cl(G.p.rel.fans+R(3,6),0,100);G.p.rel.coach=cl(G.p.rel.coach+R(2,4),0,100);G.p.rel.team=cl(G.p.rel.team+R(2,4),0,100);
+        G.p.fanLove+=R(2,4);G.p.morale=cl(G.p.morale+R(2,5),0,100);checkNickname();
+        notify('Postura firme! Torcida, técnico e time aprovam!','ok');
+        processEventQueue();
+      }},
+      {t:'🏠 Tô feliz aqui, não quero sair agora',e:()=>{
+        G.p.rel.fans=cl(G.p.rel.fans+R(8,15),0,100);G.p.rel.coach=cl(G.p.rel.coach+R(5,10),0,100);G.p.rel.team=cl(G.p.rel.team+R(5,8),0,100);
+        G.p.fanLove+=R(5,10);G.p.morale=cl(G.p.morale+R(5,10),0,100);checkNickname();
+        G.news.unshift({headline:`❤️ ${G.p.name}: "Estou feliz no ${G.p.club}"`,body:'Jogador descarta saída e reafirma compromisso. Torcida vai à loucura!',hot:true});
+        notify('Torcida, técnico e time te amam!','ok');
+        processEventQueue();
+      }},
+      {t:'❓ Qual o nível desse time?',e:()=>{
+        showModal('🕴️ Agente',`"O ${si.club} joga na <b>${lg.name}</b> (${lg.country}). É tier ${lg.tier} — ${lg.tier>LEAGUES[G.lk].tier?'um nível ACIMA do seu atual!':'mesmo nível do seu.'}\n\nForça da liga: ${lg.power}/100.\n\nSalário médio lá: ${fm(lg.wage)}/semana."\n\n"Quer que eu abra canal de conversa?"`,
+          [{t:'✅ Sim, sinaliza interesse!',e:()=>{G.p.reputation+=2;notify('Interesse sinalizado!','ok');processEventQueue()}},
+           {t:'❌ Não, por enquanto não',e:()=>{processEventQueue()}}]);
+      }}
+    ]
+  );
+}
+
+function showRumorEvent(rum){
+  const lg=LEAGUES[rum.league];const team=rum.club;
+  showModal('🕴️ Agente — Rumor de Transferência!',
+    `"A mídia tá falando que o <b style="color:var(--gold)">${team}</b> (${lg.name}) está interessado em você!"\n\n`+
+    `"Jornalistas me ligaram pedindo posicionamento. O que respondo?"`,
+    [
+      {t:'😏 "Fico lisonjeado, mas tô focado no meu time"',e:()=>{
+        G.p.a.mental.composure+=1;
+        G.p.rel.fans=cl(G.p.rel.fans+R(5,12),0,100);G.p.rel.coach=cl(G.p.rel.coach+R(4,8),0,100);G.p.rel.team=cl(G.p.rel.team+R(3,6),0,100);
+        G.p.fanLove+=R(3,8);G.p.morale=cl(G.p.morale+R(3,8),0,100);checkNickname();
+        G.news.unshift({headline:`${G.p.name} sobre rumor do ${team}: "Focado no ${G.p.club}"`,body:'Resposta profissional conquista torcida e comissão técnica.',hot:true});
+        notify('Torcida, técnico e time aprovam a postura!','ok');processEventQueue();
+      }},
+      {t:'🔥 "É um grande clube, quem não gostaria?"',e:()=>{
+        G.p.followers+=R(2000,8000);G.p.reputation+=2;
+        G.p.rel.fans=cl(G.p.rel.fans-R(5,10),0,100);G.p.rel.coach=cl(G.p.rel.coach-R(3,6),0,100);G.p.rel.team=cl(G.p.rel.team-R(2,5),0,100);
+        G.news.unshift({headline:`${G.p.name} elogia ${team}: "Quem não gostaria?"`,body:'Declaração agita torcida do '+G.p.club+'. Clima pesou.',hot:true});
+        notify('Repercutiu! Torcida, técnico e time não gostaram.','err');processEventQueue();
+      }},
+      {t:'🤐 Não comentar, ficar quieto',e:()=>{
+        G.p.a.personal.focus+=1;
+        G.p.rel.fans=cl(G.p.rel.fans+R(2,5),0,100);G.p.rel.coach=cl(G.p.rel.coach+R(1,3),0,100);
+        G.p.morale=cl(G.p.morale+R(1,3),0,100);
+        notify('Silêncio estratégico. Foco +1, torcida respeita.','ok');processEventQueue();
+      }},
+      {t:'📱 Postar algo misterioso nas redes',e:()=>{
+        G.p.followers+=R(5000,15000);G.p.reputation+=3;G.p.rel.fans=cl(G.p.rel.fans-3,0,100);
+        G.news.unshift({headline:`${G.p.name} faz post misterioso e agita redes sociais`,body:'Torcedores especulam sobre futuro do jogador.',hot:true});
+        notify('Viralizou! +Seguidores','ok');processEventQueue();
+      }}
+    ]
+  );
+}
+
+function showTransferEvent(offer){
+  showModal('🕴️ Agente — Proposta de Transferência!',
+    `"${G.p.name.split(' ')[0]}, chegou uma proposta oficial!"\n\n`+
+    `🏟️ Clube: <b style="color:var(--gold)">${offer.club}</b>\n`+
+    `🌍 Liga: ${offer.ln} (${offer.country})\n`+
+    `💪 Força: ${offer.str}\n`+
+    `💰 Salário: <b style="color:var(--green)">${fm(offer.wage)}/semana</b>\n`+
+    `🎁 Luvas: <b style="color:var(--green)">${fm(offer.sign)}</b>\n\n`+
+    `"O que você quer fazer?"`,
+    [
+      {t:'✅ Aceitar a transferência!',e:()=>{const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0)accOffer(idx);processEventQueue()}},
+      {t:'💰 Pedir salário maior',e:()=>{
+        if(R(1,100)<=25+G.p.reputation/4){
+          const newW=Math.round(offer.wage*1.3);
+          showModal('🕴️ Agente',`"Negociei e o ${offer.club} aceitou: <b style="color:var(--green)">${fm(newW)}/semana</b>! Topou?"`,
+            [{t:'✅ Agora sim!',e:()=>{offer.wage=newW;const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0){G.offers[idx].wage=newW;accOffer(idx)}processEventQueue()}},
+             {t:'❌ Vou pensar',e:()=>{processEventQueue()}}]);
+        } else {
+          showModal('🕴️ Agente',`"Tentei, mas o ${offer.club} não sobe. É ${fm(offer.wage)}/sem. Aceita?"`,
+            [{t:'✅ Aceito',e:()=>{const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0)accOffer(idx);processEventQueue()}},
+             {t:'❌ Recusar',e:()=>{const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0)decOffer(idx);processEventQueue()}}]);
+        }
+      }},
+      {t:'❓ Me fala mais sobre esse time',e:()=>{
+        const lg=LEAGUES[offer.lk];
+        showModal('🕴️ Agente',`"O ${offer.club} joga na <b>${lg.name}</b> (${lg.country}).\n\nForça da liga: ${lg.power}/100.\nÉ tier ${lg.tier} — ${lg.tier>LEAGUES[G.lk].tier?'ACIMA do seu atual, seria um salto na carreira!':'mesmo nível do seu.'}\n\nO salário lá é ${fm(offer.wage)}/semana, contra seus ${fm(G.p.wage)} atuais."`,
+          [{t:'✅ Aceitar!',e:()=>{const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0)accOffer(idx);processEventQueue()}},
+           {t:'❌ Recusar',e:()=>{const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0)decOffer(idx);processEventQueue()}},
+           {t:'🔙 Ver outras propostas depois',e:()=>{processEventQueue()}}]);
+      }},
+      {t:'❌ Não tenho interesse',e:()=>{const idx=G.offers.findIndex(o=>o.club===offer.club);if(idx>=0)decOffer(idx);processEventQueue()}},
+      {t:'🔙 Ver depois na aba Transferências',e:()=>{processEventQueue()}}
+    ]
+  );
+}
+
+function simOther(){
+  const n=Math.floor(G.league.length/2),sh=[...G.league].sort(()=>Math.random()-.5);
+  for(let i=0;i<n;i++){const h=sh[i*2],a=sh[i*2+1];if(!h||!a||h.me||a.me)continue;
+    const hg=Math.max(0,Math.round(h.s/30+R(-1,2))),ag=Math.max(0,Math.round(a.s/30+R(-1,2)));
+    h.p++;a.p++;h.gf+=hg;h.ga+=ag;a.gf+=ag;a.ga+=hg;
+    if(hg>ag){h.w++;h.pts+=3;a.l++}else if(ag>hg){a.w++;a.pts+=3;h.l++}else{h.d++;h.pts++;a.d++;a.pts++}
+    // Top scorers aleatórios
+    if(hg>0&&R(1,100)<=40)h.topGoals+=R(1,2);if(ag>0&&R(1,100)<=40)a.topGoals+=R(1,2);
+  }
+  G.league.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga)||b.gf-a.gf);
+}
+
+function endSeason(){
+  const pos=G.league.findIndex(t=>t.me)+1;
+  if(pos===1){if(!G.titles)G.titles=0;G.titles++;checkAch('ch');if(G.titles>=2)checkAch('ch2');if(G.titles>=3)checkAch('ch3')}
+  G.sHist.push({s:G.season,l:LEAGUES[G.lk].name,c:G.p.club,pos,g:G.p.sGoals,a:G.p.sAssists,ap:G.p.sApps});
+  showModal(`Temporada ${G.season} Encerrada!`,
+    `<b>${G.p.club}</b> — <b style="color:var(--gold)">${pos}º lugar</b> na ${LEAGUES[G.lk].name}.<br><br>${G.p.sGoals} gols, ${G.p.sAssists} assistências em ${G.p.sApps} jogos.<br><br>${pos===1?'🏆 <b style="color:var(--gold)">CAMPEÃO!</b>':''}`,
+    [{t:'Próxima Temporada →',e:()=>{
+      G.season++;G.week=1;G.p.age++;G.p.sGoals=0;G.p.sAssists=0;G.p.sApps=0;
+      G.league=genT(G.lk,G.p.club);G.au={train:0,play:0,media:0,rest:0,personal:0};
+      G.wa=5;G.matchOn=true;G.curM=null;G.offers=[];genNews();genTopScorers();
+      log(`Temporada ${G.season}! ${G.p.age} anos.`);uh();switchTab('news');
+    }}]);
+}
+
+function trigEv(){const e=pick(RANDOM_EVENTS);showModal(e.title,e.text,e.choices.map(c=>({t:c.text,e:c.effect})))}
+
+// ===== RANDOM EVENTS =====
+const RANDOM_EVENTS=[
+  {title:'Patrocínio Surpresa',text:'Uma marca quer fazer um comercial com você!',choices:[{text:'Aceitar (+Imagem, +R$)',effect:()=>{G.p.a.social.publicImage+=3;G.p.money+=R(5000,20000);G.p.followers+=R(1000,5000);notify('Comercial gravado!','ok')}},{text:'Recusar',effect:()=>{G.p.a.personal.focus+=1}}]},
+  {title:'Polêmica',text:'Tabloide fez matéria sobre você.',choices:[{text:'Nota calma (+Compostura)',effect:()=>{G.p.a.mental.composure+=2}},{text:'Ignorar (+Foco)',effect:()=>{G.p.a.personal.focus+=2}},{text:'Desabafar nas redes (-Imagem)',effect:()=>{G.p.a.social.publicImage-=4;G.p.followers+=R(2000,8000)}}]},
+  {title:'Caridade',text:'Hospital infantil convida.',choices:[{text:'Visitar (+Moral, +Torcida)',effect:()=>{G.p.morale=cl(G.p.morale+10,0,100);G.p.rel.fans=cl(G.p.rel.fans+8,0,100);G.p.fanLove+=5;checkNickname();notify('Visita emocionante!','ok')}},{text:'Recusar',effect:()=>{G.p.a.personal.focus+=1}}]},
+  {title:'Família',text:'Seus pais querem visitar.',choices:[{text:'Convidar (+Moral)',effect:()=>{G.p.rel.parents=cl(G.p.rel.parents+10,0,100);G.p.morale=cl(G.p.morale+8,0,100)}},{text:'Prometer visitar depois',effect:()=>{G.p.rel.parents+=3}}]},
+  {title:'Lesão leve',text:'Fisgada no treino.',choices:[{text:'Descansar (perde 1 ação)',effect:()=>{G.wa=Math.max(0,G.wa-1);G.p.energy=cl(G.p.energy+20,0,100)}},{text:'Ignorar',effect:()=>{if(R(1,100)>50)notify('Deu certo!');else{G.p.injured=R(1,3);notify('Lesionado!','err')}}}]},
+];
+
+// ===== MODAL =====
+function showModal(t,tx,ch){const c=$('modal-container');c.classList.remove('hidden');c.innerHTML=`<div class="modal-overlay"><div class="modal"><h3>${t}</h3><p>${tx}</p><div class="choices">${ch.map((x,i)=>`<div class="cb" onclick="hChoice(${i})">${x.t}</div>`).join('')}</div></div></div>`;G._mc=ch}
+function hChoice(i){$('modal-container').classList.add('hidden');if(G._mc[i].e)G._mc[i].e();uh()}
+
+function notify(m,t){const d=document.createElement('div');d.className='notif '+(t||'');d.textContent=m;$('notif-container').appendChild(d);setTimeout(()=>d.remove(),3500)}
+function log(m){G.evLog.push(`[S${G.week}] ${m}`);if(G.evLog.length>50)G.evLog.shift()}
+function uh(){updateHUD()}
+
+function saveGame(){localStorage.setItem('fs2',JSON.stringify(G));notify('Salvo!','ok')}
+function loadGame(){const d=localStorage.getItem('fs2');if(d){G=JSON.parse(d);showScreen('game-screen');buildSidebar();uh();switchTab('news');notify('Carregado!','ok')}}
+
+// Salvar Como — permite dar um nome ao save e baixar como arquivo
+function saveAs(){
+  const nome=prompt('Nome do save:',G.p.name+' - T'+G.season+' S'+G.week);
+  if(!nome)return;
+  // Salva no localStorage com nome customizado
+  localStorage.setItem('fs2_'+nome,JSON.stringify(G));
+  // Também baixa como arquivo JSON
+  const blob=new Blob([JSON.stringify(G,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=nome.replace(/[^a-zA-Z0-9\-_ ]/g,'')+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  notify('Salvo como "'+nome+'"!','ok');
+}
+
+// Avançar inteligente — guia passo a passo como um agente
+function smartAdvance(){
+  // 1. Partida em andamento? Vai pra partida
+  if(G.curM&&G.curM.phase!=='done'){
+    switchTab('match');
+    showModal('🕴️ Agente','Ei, você tem uma partida em andamento! Termine ela primeiro.',[{t:'⚽ Ir para a partida',e:()=>switchTab('match')}]);
+    return;
+  }
+
+  // 2. Precisa treinar?
+  if(!G.au.train){
+    showModal('🕴️ Agente — Treino',
+      '"Vamos começar a semana com um bom treino! Escolha qual habilidade quer desenvolver."\n\n🏋️ Treinar aumenta seus atributos e mostra pro técnico que você merece jogar.',
+      [{t:'🏋️ Ir treinar!',e:()=>{switchTab('actions');doAct('train')}},
+       {t:'⏭️ Pular treino esta semana',e:()=>{G.au.train=1;G.wa=Math.max(1,G.wa-1);smartAdvance()}}]);
+    return;
+  }
+
+  // 3. Tem jogo? Precisa jogar?
+  if(!G.au.play&&G.matchOn){
+    showModal('🕴️ Agente — Dia de Jogo!',
+      '"Tem partida hoje! Hora de mostrar seu futebol em campo."\n\n⚽ Uma boa atuação aumenta sua reputação e atrai olheiros.',
+      [{t:'⚽ Vamos jogar!',e:()=>{switchTab('actions');doAct('play')}},
+       {t:'😴 Não quero jogar (descansar)',e:()=>{G.au.play=1;G.wa=Math.max(1,G.wa-1);notify('Ficou de fora do jogo.');smartAdvance()}}]);
+    return;
+  }
+
+  // 4. Mídia?
+  if(!G.au.media){
+    showModal('🕴️ Agente — Mídia',
+      '"Tem uma oportunidade de aparecer na mídia. Uma entrevista, post nas redes... ajuda na imagem e nos seguidores!"\n\n📺 Mais exposição = mais patrocínios no futuro.',
+      [{t:'📺 Fazer aparição na mídia',e:()=>{doAct('media');smartAdvance()}},
+       {t:'⏭️ Pular mídia',e:()=>{G.au.media=1;G.wa=Math.max(1,G.wa-1);smartAdvance()}}]);
+    return;
+  }
+
+  // 5. Descansar?
+  if(!G.au.rest){
+    showModal('🕴️ Agente — Descanso',
+      `"Sua energia tá em ${Math.round(G.p.energy)}%. ${G.p.energy<50?'Tá baixa, hein! Recomendo descansar.':'Tá ok, mas descansar nunca faz mal.'}"\n\n😴 Descanso recupera energia e previne lesões.`,
+      [{t:'😴 Descansar',e:()=>{doAct('rest');smartAdvance()}},
+       {t:'⏭️ Pular descanso',e:()=>{G.au.rest=1;G.wa=Math.max(1,G.wa-1);smartAdvance()}}]);
+    return;
+  }
+
+  // 6. Pessoal?
+  if(!G.au.personal){
+    showModal('🕴️ Agente — Vida Pessoal',
+      '"Cuida da vida fora do campo também! Família, finanças, saúde mental... tudo importa pra sua carreira."',
+      [{t:'🏡 Cuidar do pessoal',e:()=>{doAct('personal')}},
+       {t:'⏭️ Pular',e:()=>{G.au.personal=1;G.wa=Math.max(1,G.wa-1);smartAdvance()}}]);
+    return;
+  }
+
+  // 7. Tudo feito! Avançar semana
+  showModal('🕴️ Agente — Fim da Semana',
+    '"Tudo certo essa semana! Bora pra próxima? Vou ficar de olho em propostas e oportunidades pra você."',
+    [{t:'⏩ Avançar para a próxima semana',e:()=>{advWeek()}},
+     {t:'🔙 Voltar e fazer mais alguma coisa',e:()=>{switchTab('news')}}]);
+}
+
+// Carregar de arquivo JSON
+function loadFromFile(){
+  const input=document.createElement('input');input.type='file';input.accept='.json';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        G=JSON.parse(ev.target.result);
+        showScreen('game-screen');buildSidebar();uh();switchTab('news');
+        notify('Carreira carregada do arquivo!','ok');
+      }catch(err){notify('Arquivo inválido!','err')}
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='F5'){e.preventDefault();saveGame()}if(e.key==='F9'){e.preventDefault();loadGame()}});
+
+// Mostra botões de carregar na tela inicial se existe save
+window.addEventListener('DOMContentLoaded',()=>{
+  if(localStorage.getItem('fs2'))document.getElementById('btn-load').style.display='';
+  document.getElementById('btn-load-file').style.display='';
+});
+</script>
+</body>
+</html>
