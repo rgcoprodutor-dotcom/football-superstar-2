@@ -383,12 +383,60 @@ function init(name,pos,nat){
     {id:'rep50',n:'Reputação Nacional',d:'Alcance 50 de reputação',i:'⭐',ok:0},
     {id:'rep80',n:'Fama Internacional',d:'Alcance 80 de reputação',i:'🌟',ok:0},
     {id:'age30',n:'Longevidade',d:'Continue jogando aos 30 anos',i:'🧓',ok:0},
+    {id:'cap',n:'Capitão',d:'Receba a braçadeira de capitão',i:'©️',ok:0},
+    {id:'c10',n:'Camisa 10',d:'Vista a camisa 10',i:'🔟',ok:0},
+    {id:'fk',n:'Cobrador de Falta',d:'Seja o cobrador oficial de faltas',i:'🎯',ok:0},
+    {id:'pk',n:'Cobrador de Pênalti',d:'Seja o cobrador oficial de pênaltis',i:'⚽',ok:0},
+    {id:'fkg',n:'Gol de Falta',d:'Marque um gol de falta',i:'🌀',ok:0},
+    {id:'pkg',n:'Gol de Pênalti',d:'Marque um gol de pênalti',i:'🥅',ok:0},
+    {id:'selA',n:'Seleção Principal',d:'Convocado para seleção principal',i:'🇧🇷',ok:0},
   ],
   shop:[{id:'bike',n:'Bicicleta',ic:'🚲',pr:500,img:5,mor:2,inc:0,ow:0},{id:'car',n:'Carro Esportivo',ic:'🏎️',pr:80000,img:10,mor:5,inc:0,ow:0},{id:'lcar',n:'Supercarro',ic:'🏎️',pr:350000,img:20,mor:8,inc:0,ow:0},{id:'watch',n:'Relógio Grife',ic:'⌚',pr:25000,img:8,mor:3,inc:0,ow:0},{id:'house',n:'Casa Moderna',ic:'🏠',pr:500000,img:12,mor:10,inc:0,ow:0},{id:'mansion',n:'Mansão',ic:'🏰',pr:3000000,img:25,mor:15,inc:0,ow:0},{id:'cafe',n:'Cafeteria',ic:'☕',pr:200000,img:5,mor:4,inc:2000,ow:0},{id:'gym',n:'Academia',ic:'🏋️',pr:400000,img:8,mor:5,inc:5000,ow:0},{id:'fashion',n:'Loja Moda',ic:'👗',pr:600000,img:15,mor:6,inc:8000,ow:0}],
-  evLog:[],sHist:[],rumors:[]
+  evLog:[],sHist:[],rumors:[],
+  // Novas features
+  shirtNumber:R(20,40), // Camisa inicial aleatória alta
+  captain:false, // Braçadeira
+  fkTaker:false, // Cobrador de falta
+  pkTaker:false, // Cobrador de pênalti
+  calendar:[], // Calendário da temporada
+  selCalendar:[], // Calendário seleção
+  transferWindow:false, // Janela aberta?
+  titles:0,
   };
+  genCalendar();
   genNews();
   genTopScorers();
+}
+
+// Gera calendário da temporada
+function genCalendar(){
+  G.calendar=[];
+  const teams=LEAGUES[G.lk].teams;
+  const myIdx=teams.findIndex(t=>t.n===G.p.club);
+  for(let w=1;w<=38;w++){
+    const oppIdx=(myIdx+w)%teams.length;
+    if(oppIdx===myIdx)continue;
+    const opp=teams[oppIdx];
+    const home=w%2===0;
+    const isClassico=['Flamengo','Palmeiras','Corinthians','São Paulo','Vasco','Botafogo','Grêmio','Internacional','Cruzeiro','Atlético-MG','Santos','River Plate','Boca Juniors','Real Madrid','Barcelona','Man City','Liverpool','Juventus','Inter','Milan','PSG','Benfica','Porto'].includes(opp.n);
+    G.calendar.push({week:w,opp:opp.n,oppS:opp.s,home,classico:isClassico,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+  }
+  // Janela de transferência: semana 19 (meio ano) e 38 (fim)
+  G.transferWindow=false;
+  // Seleção
+  genSelCalendar();
+}
+
+function genSelCalendar(){
+  G.selCalendar=[];
+  if(G.p.nat!=='Brasil'||G.p.age>23)return;
+  const cat=G.p.age<=17?'Sub-17':G.p.age<=20?'Sub-20':'Sub-23';
+  // Datas FIFA: semanas 8, 16, 24, 32
+  [8,16,24,32].forEach(w=>{
+    if(G.p.reputation>=25+w){
+      G.selCalendar.push({week:w,cat,opp:pick(['Argentina','Uruguai','Colômbia','Chile','Paraguai','Equador','Peru','Venezuela','México','EUA']),played:false});
+    }
+  });
 }
 
 function genT(k,pc){return LEAGUES[k].teams.map(t=>({n:t.n,s:t.s,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0,me:t.n===pc,topScorer:pick(['Silva','Santos','Oliveira','Costa','Souza','Pereira','Almeida','Lima','Fernandes','Ribeiro']),topGoals:0}))}
@@ -510,7 +558,7 @@ document.querySelectorAll('.posbtn').forEach(b=>{b.addEventListener('click',()=>
 
 function startGame(){const n=$('pname').value.trim()||'Alex Silva';if(!selPos){notify('Selecione posição!','err');return}init(n,selPos,$('pnat').value);showScreen('game-screen');buildSidebar();updateHUD();switchTab('news')}
 
-const TABS=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['attributes','📊','Atributos'],['match','⚽','Jogo'],['league','🏆','Tabela'],['scorers','🥇','Artilh.'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
+const TABS=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['calendar','📅','Calendário'],['match','⚽','Jogo'],['league','🏆','Tabela'],['scorers','🥇','Artilh.'],['selection','🇧🇷','Seleção'],['attributes','📊','Atributos'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
 
 function buildSidebar(){
   $('sidebar').innerHTML=TABS.map(([t,i,l])=>`<div class="ni${t==='news'?' act':''}" data-t="${t}" onclick="switchTab('${t}')"><span class="ic">${i}</span>${l}</div>`).join('');
@@ -543,7 +591,7 @@ function switchTab(t){
   if(activeBtn)activeBtn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   renderTab(t);
 }
-function renderTab(t){const m={dashboard:rDash,actions:rActions,attributes:rAttrs,match:rMatch,news:rNews,league:rLeague,scorers:rScorers,transfers:rTransfers,agent:rAgent,relationships:rRels,finances:rFin,shop:rShop,achievements:rAchs};if(m[t])m[t]($('ca'))}
+function renderTab(t){const m={dashboard:rDash,actions:rActions,attributes:rAttrs,match:rMatch,news:rNews,league:rLeague,scorers:rScorers,transfers:rTransfers,agent:rAgent,relationships:rRels,finances:rFin,shop:rShop,achievements:rAchs,calendar:rCalendar,selection:rSelection};if(m[t])m[t]($('ca'))}
 function actionsLeft(){return G.wa-Object.values(G.au).filter(v=>v).length}
 
 // ===== PAINEL =====
@@ -671,15 +719,40 @@ function advMatch(){
   const m=G.curM;let safe=0;
   while(m.min<90&&safe<60){safe++;m.min+=R(2,7);if(m.min>90)m.min=90;
     const ev=R(1,100);
-    if(ev<=28&&m.min<88){// AÇÃO DO JOGADOR
+    // AÇÃO NORMAL DO JOGADOR (25%)
+    if(ev<=25&&m.min<88){
       const sit=pickSit();const sd=pick(SITS[sit]);
       m._sit=sit;m._sd=sd;m._acts=getActs(G.p.pos,sit);m.phase='action';m.ac++;
       m.log.push({min:m.min,text:`${m.min}' — ${sd.d}`,type:'action'});
-      if(m.scoutWatch&&R(1,100)<=40)m.log.push({min:m.min,text:`${m.min}' 🔍 O olheiro anota algo no caderno...`,type:'scout'});
+      if(m.scoutWatch&&R(1,100)<=40)m.log.push({min:m.min,text:`${m.min}' 🔍 O olheiro anota algo...`,type:'scout'});
       switchTab('match');return}
-    if(ev<=38){if(R(1,100)<=G.p.clubStr*.3){m.tg++;m.log.push({min:m.min,text:`${m.min}' ⚽ Companheiro marca!`,type:'goal'})}}
-    else if(ev<=48){if(R(1,100)<=m.oppS*.3){m.og++;m.log.push({min:m.min,text:`${m.min}' ⚽ ${m.opp} marca...`,type:'miss'})}}
-    else if(ev<=60){const t=[`${m.min}' Boa jogada do ${G.p.club}`,`${m.min}' ${m.opp} pressiona`,`${m.min}' Falta`,`${m.min}' Escanteio`,`${m.min}' Dividida forte`];m.log.push({min:m.min,text:pick(t),type:'event'})}
+    // FALTA a nosso favor — se é cobrador (5%)
+    if(ev<=30&&G.fkTaker&&m.min<88){
+      m._sit='freekick';m._sd={d:'Falta perigosa! Você se posiciona para cobrar.',c:'Barreira montada, goleiro se posiciona.'};
+      m._acts=[
+        {t:'🎯 Chutar direto no gol!',i:'Finalização+Compostura',df:'difficult',at:[G.p.a.technical.finishing,G.p.a.mental.composure],tp:'fk_goal',xc:'technical',xa:'finishing'},
+        {t:'📐 Cruzar na área',i:'Passe+Visão',df:'medium',at:[G.p.a.technical.passing,G.p.a.mental.gameVision],tp:'pass',xc:'technical',xa:'passing'},
+        {t:'🎯 Chutar por cima da barreira',i:'Finalização+Coragem',df:'veryDifficult',at:[G.p.a.technical.finishing,G.p.a.mental.bravery],tp:'fk_goal',xc:'technical',xa:'finishing'},
+      ];
+      m.phase='action';m.ac++;
+      m.log.push({min:m.min,text:`${m.min}' — FALTA! ${G.p.name} vai cobrar!`,type:'action'});
+      switchTab('match');return}
+    // PÊNALTI a nosso favor — se é cobrador (3%)
+    if(ev<=33&&G.pkTaker&&R(1,100)<=15&&m.min<88){
+      m._sit='penalty';m._sd={d:'PÊNALTI para o '+G.p.club+'! Você vai cobrar!',c:'Torcida em silêncio. Goleiro tenta te desconcentrar.'};
+      m._acts=[
+        {t:'🎯 Chutar no canto esquerdo',i:'Finalização+Compostura',df:'medium',at:[G.p.a.technical.finishing,G.p.a.mental.composure],tp:'pk_goal',xc:'technical',xa:'finishing'},
+        {t:'🎯 Chutar no canto direito',i:'Finalização+Compostura',df:'medium',at:[G.p.a.technical.finishing,G.p.a.mental.composure],tp:'pk_goal',xc:'technical',xa:'finishing'},
+        {t:'🎯 Cavadinha no meio!',i:'Compostura+Coragem',df:'difficult',at:[G.p.a.mental.composure,G.p.a.mental.bravery],tp:'pk_goal',xc:'mental',xa:'composure'},
+        {t:'💪 Bater forte no alto',i:'Finalização+Força',df:'medium',at:[G.p.a.technical.finishing,G.p.a.physical.strength],tp:'pk_goal',xc:'technical',xa:'finishing'},
+      ];
+      m.phase='action';m.ac++;
+      m.log.push({min:m.min,text:`${m.min}' — PÊNALTI! ${G.p.name} na marca da cal!`,type:'action'});
+      switchTab('match');return}
+    // Eventos normais
+    if(ev<=43){if(R(1,100)<=G.p.clubStr*.3){m.tg++;m.log.push({min:m.min,text:`${m.min}' ⚽ Companheiro marca!`,type:'goal'})}}
+    else if(ev<=53){if(R(1,100)<=m.oppS*.3){m.og++;m.log.push({min:m.min,text:`${m.min}' ⚽ ${m.opp} marca...`,type:'miss'})}}
+    else if(ev<=65){const t=[`${m.min}' Boa jogada do ${G.p.club}`,`${m.min}' ${m.opp} pressiona`,`${m.min}' Falta`,`${m.min}' Escanteio`,`${m.min}' Dividida forte`,`${m.min}' Cartão amarelo`];m.log.push({min:m.min,text:pick(t),type:'event'})}
   }
   finMatch();
 }
@@ -819,9 +892,10 @@ function doMA(i){
 
 function applyMatchAction(a,r,m){
   if(r.ok){
-    if(['shoot','long','dgoal','bicycle'].includes(a.tp)){
+    if(['shoot','long','dgoal','bicycle','fk_goal','pk_goal'].includes(a.tp)){
       m.pg++;m.tg++;m.rat+=2.0;
-      const how={shoot:'com classe',long:'DE FORA DA ÁREA',dgoal:'DRIBLOU O GOLEIRO',bicycle:'DE BICICLETA! GOLAÇO'}[a.tp];
+      const how={shoot:'com classe',long:'DE FORA DA ÁREA',dgoal:'DRIBLOU O GOLEIRO',bicycle:'DE BICICLETA! GOLAÇO',fk_goal:'DE FALTA! GOLAÇO',pk_goal:'DE PÊNALTI'}[a.tp];
+      if(a.tp==='fk_goal')checkAch('fkg');if(a.tp==='pk_goal')checkAch('pkg');
       m.log.push({min:m.min,text:`${m.min}' ⚽ GOOOOOL! ${G.p.name} marca ${how}! [${r.final}/${r.threshold}] 🎉`,type:'goal'});
       addXP(a.xc,a.xa,4);addXP('mental','composure',1);
       G.p.rel.fans=cl(G.p.rel.fans+R(3,8),0,100);G.p.rel.team=cl(G.p.rel.team+R(2,5),0,100);G.p.fanLove+=R(2,5);
@@ -900,6 +974,8 @@ function finMatch(){
   if(m.rat>=8)G.news.unshift({headline:`⭐ ${G.p.name} brilha com nota ${m.rat.toFixed(1)} contra o ${m.opp}!`,body:`${m.pg} gols e ${m.pa} assistências na partida.`,hot:true});
   else if(m.rat<=4)G.news.unshift({headline:`📉 ${G.p.name} decepciona contra o ${m.opp}`,body:`Nota ${m.rat.toFixed(1)}. Torcida cobrou.`,hot:false});
   addPlayerToTopScorers();
+  // Atualizar calendário
+  if(G.calendar){const calM=G.calendar.find(c=>c.week===G.week);if(calM){calM.played=true;calM.result=tg>m.og?'V':tg<m.og?'D':'E';calM.playerGoals=m.pg;calM.playerAssists=m.pa;calM.rating=m.rat}}
   const res=tg>m.og?'VITÓRIA':tg<m.og?'DERROTA':'EMPATE';
   log(`${res} vs ${m.opp} (${tg}-${m.og}) | Nota:${m.rat.toFixed(1)} | G:${m.pg} A:${m.pa}`);
   m.log.push({min:90,text:`90' — FINAL! ${G.p.club} ${tg} x ${m.og} ${m.opp}`,type:'event'});
@@ -1073,7 +1149,11 @@ function accOffer(i){
   if(o.lk==='argentina')checkAch('arg');
   if(o.tier>LEAGUES[old].tier)checkAch('up');
   G.news.unshift({headline:`🔄 ${G.p.name} é o novo reforço do ${o.club}!`,body:`Transferido por ${fm(o.sign)} de luvas.`,hot:true});
+  G.captain=false;G.fkTaker=false;G.pkTaker=false; // Perde cargos ao mudar
+  genCalendar(); // Novo calendário
   log('Transferido: '+o.club+' ('+o.ln+')');notify('Bem-vindo ao '+o.club+'!','ok');
+  // Se é estrela, escolhe camisa
+  setTimeout(()=>offerShirtChoice(),500);
   genTopScorers();uh();switchTab('transfers');
 }
 function decOffer(i){G.offers.splice(i,1);notify('Recusada.');switchTab('transfers')}
@@ -1185,14 +1265,46 @@ function advWeek(){
     G._eventQueue.push({type:'rumor',data:rum});
   }
 
-  // Transferência nova disponível?
-  if(G.offers.length===0)genOffers();
-  if(G.offers.length>0&&R(1,100)<=30){
-    G._eventQueue.push({type:'transfer',data:G.offers[0]});
+  // Transferência — SÓ na janela de transferência
+  const winOpen=isTransferWindowOpen();
+  G.transferWindow=winOpen;
+  if(winOpen){
+    if(G.offers.length===0){
+      // Mid-window: só mesma liga ou inferior. End-window: qualquer.
+      if(isEndWindowOpen())genOffers();
+      else genOffersSameLeague();
+    }
+    if(G.offers.length>0&&R(1,100)<=40){
+      G._eventQueue.push({type:'transfer',data:G.offers[0]});
+    }
+    if(G.week===17||G.week===36){
+      G.news.unshift({headline:`📢 Janela de transferências ${G.week===17?'do meio do ano':'de fim de ano'} está ABERTA!`,body:`Clubes podem negociar jogadores ${G.week===17?'da mesma liga':'de qualquer liga'}.`,hot:true});
+    }
+  }
+
+  // Check braçadeira, camisa, cobranças
+  checkCaptainAndRoles();
+
+  // Atualizar calendário com resultado se jogou
+  if(G.calendar){
+    const calMatch=G.calendar.find(c=>c.week===G.week-1);
+    // Calendário será atualizado no finMatch
   }
 
   // Processa fila de eventos
   processEventQueue();
+}
+
+// Ofertas só da mesma liga (janela do meio)
+function genOffersSameLeague(){
+  G.offers=[];const o=ovr(),rep=G.p.reputation;
+  const lg=LEAGUES[G.lk];
+  const cands=lg.teams.filter(t=>t.n!==G.p.club&&Math.abs(t.s-o)<20);
+  const n=rep>=40?R(0,2):R(0,1);
+  for(let i=0;i<n;i++){
+    const team=pick(cands);if(!team)continue;
+    G.offers.push({club:team.n,str:team.s,lk:G.lk,ln:lg.name,country:lg.country,tier:lg.tier,wage:Math.round(lg.wage*(1+R(0,2))),sign:R(5000,100000),len:R(52,156)});
+  }
 }
 
 function genOneSponsorOffer(){
@@ -1407,6 +1519,101 @@ function hChoice(i){$('modal-container').classList.add('hidden');if(G._mc[i].e)G
 function notify(m,t){const d=document.createElement('div');d.className='notif '+(t||'');d.textContent=m;$('notif-container').appendChild(d);setTimeout(()=>d.remove(),3500)}
 function log(m){G.evLog.push(`[S${G.week}] ${m}`);if(G.evLog.length>50)G.evLog.shift()}
 function uh(){updateHUD()}
+
+// ===== CALENDÁRIO =====
+function rCalendar(el){
+  if(!G.calendar||G.calendar.length===0)genCalendar();
+  const lg=LEAGUES[G.lk];
+  const windowOpen=isTransferWindowOpen();
+  el.innerHTML=`<div class="card"><h3>📅 Calendário — ${lg.name} T${G.season}</h3>
+    <div style="font-size:.82rem;color:#aaa;margin-bottom:12px">
+      Camisa: <b style="color:var(--gold)">#${G.shirtNumber}</b> ${G.captain?'| ©️ <b style="color:var(--gold)">CAPITÃO</b>':''} ${G.fkTaker?'| 🎯 Cobrador de Falta':''} ${G.pkTaker?'| ⚽ Cobrador de Pênalti':''}
+      <br>Janela de transferência: <b style="color:${windowOpen?'var(--green)':'var(--red)}'}">${windowOpen?'ABERTA':'FECHADA'}</b> ${!windowOpen?'(abre sem. 17-19 mesma liga / sem. 36-38 todas)':''}
+    </div>
+    <div style="max-height:450px;overflow-y:auto">
+    ${G.calendar.map((m,i)=>{
+      const isCurrent=m.week===G.week;
+      const isPast=m.week<G.week;
+      const bg=isCurrent?'rgba(226,183,20,.15)':isPast?'rgba(255,255,255,.02)':'transparent';
+      const border=isCurrent?'var(--gold)':'var(--brd)';
+      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid ${border};background:${bg};margin-bottom:4px;font-size:.85rem">
+        <div style="width:40px;font-family:'Oswald';color:${isCurrent?'var(--gold)':'#888'}">S${m.week}</div>
+        <div style="flex:1">${m.home?'🏟️':'✈️'} ${m.home?'vs':'@'} <b style="color:${m.classico?'var(--gold)':'#ddd'}">${m.opp}</b> ${m.classico?'⭐':''}</div>
+        <div style="width:80px;text-align:right">${m.played?`<span style="color:${m.result==='V'?'var(--green)':m.result==='D'?'var(--red)':'var(--orange)'}">${m.result}</span> ⚽${m.playerGoals} 🎯${m.playerAssists} <span style="color:var(--gold)">${m.rating.toFixed(1)}</span>`:(isCurrent?'<b style="color:var(--gold)">HOJE</b>':'—')}</div>
+      </div>`}).join('')}
+    </div></div>`;
+}
+
+// ===== SELEÇÃO =====
+function rSelection(el){
+  const p=G.p;
+  const cat=p.age<=17?'Sub-17':p.age<=20?'Sub-20':p.age<=23?'Sub-23':'Principal';
+  const eligible=p.nat==='Brasil'&&p.reputation>=25;
+  el.innerHTML=`<div class="card"><h3>🇧🇷 Seleção Brasileira — ${cat}</h3>
+    ${!eligible?'<p style="color:#666">Você precisa de reputação 25+ e ser brasileiro para ser convocado.</p>':`
+    <p style="color:#aaa;font-size:.88rem">Status: ${G.selCalendar.length>0?'<b style="color:var(--green)">Convocado</b>':'<b style="color:#888">Aguardando convocação</b>'}</p>
+    <div style="margin-top:12px;max-height:300px;overflow-y:auto">
+    ${G.selCalendar.length>0?G.selCalendar.map(m=>{
+      const isPast=m.week<G.week;
+      return`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--brd);margin-bottom:4px;font-size:.85rem;background:${m.week===G.week?'rgba(226,183,20,.15)':'transparent'}">
+        <div style="font-family:'Oswald';color:var(--gold);width:40px">S${m.week}</div>
+        <div style="flex:1">🇧🇷 Brasil ${cat} vs ${m.opp}</div>
+        <div>${m.played?'✅ Jogou':'—'}</div>
+      </div>`}).join(''):'<p style="color:#666;font-size:.85rem">Sem jogos agendados. Continue evoluindo!</p>'}
+    </div>`}
+    <h4 style="color:var(--gold);margin:16px 0 8px">Histórico de Convocações</h4>
+    <div style="font-size:.82rem;color:#aaa">${Object.entries(p.youthCaps||{}).map(([age,cat])=>`<div>Idade ${age}: ${cat}</div>`).join('')||'Nenhuma convocação ainda.'}</div>
+  </div>`;
+}
+
+// ===== JANELA DE TRANSFERÊNCIA =====
+function isTransferWindowOpen(){
+  // Meio do ano: semanas 17-19 (só mesma liga)
+  // Final do ano: semanas 36-38 (qualquer time)
+  return(G.week>=17&&G.week<=19)||(G.week>=36&&G.week<=38);
+}
+function isEndWindowOpen(){return G.week>=36&&G.week<=38}
+function isMidWindowOpen(){return G.week>=17&&G.week<=19}
+
+// ===== BRAÇADEIRA & CAMISA =====
+function checkCaptainAndRoles(){
+  const p=G.p;
+  // Braçadeira — moral alta e relação alta com time/técnico
+  if(!G.captain&&p.morale>=80&&p.rel.coach>=70&&p.rel.team>=65){
+    G.captain=true;checkAch('cap');
+    G.news.unshift({headline:`©️ ${p.name} recebe a braçadeira de capitão do ${p.club}!`,body:'Técnico reconhece a liderança do jogador.',hot:true});
+    log('Virou capitão!');notify('©️ Braçadeira de capitão!','ok');
+    p.morale=cl(p.morale+5,0,100);p.rel.fans=cl(p.rel.fans+5,0,100);
+  }
+  // Cobrador de falta — finalização alta + técnico confia
+  if(!G.fkTaker&&p.a.technical.finishing>=55&&p.rel.coach>=60){
+    G.fkTaker=true;checkAch('fk');
+    log('Cobrador de falta oficial!');notify('🎯 Cobrador de falta!','ok');
+  }
+  // Cobrador de pênalti — finalização + compostura alta + técnico confia
+  if(!G.pkTaker&&p.a.technical.finishing>=60&&p.a.mental.composure>=55&&p.rel.coach>=65){
+    G.pkTaker=true;checkAch('pk');
+    log('Cobrador de pênalti!');notify('⚽ Cobrador de pênalti!','ok');
+  }
+}
+
+function offerShirtChoice(){
+  // Oferece escolha de camisa quando é estrela ou moral muito alta
+  if(G.p.reputation>=50||G.p.morale>=85){
+    const available=[7,8,9,10,11,17,20,21,23,27,99];
+    showModal('👕 Escolha seu Número de Camisa!',
+      `"${G.p.name.split(' ')[0]}, o clube te dá a honra de escolher seu número!"\n\nAtualmente: #${G.shirtNumber}`,
+      available.map(n=>({t:`#${n}`,e:()=>{
+        G.shirtNumber=n;
+        if(n===10)checkAch('c10');
+        G.news.unshift({headline:`👕 ${G.p.name} escolhe a camisa ${n} no ${G.p.club}!`,body:n===10?'A lendária camisa 10!':'Novo número para o jogador.',hot:n===10});
+        log('Camisa #'+n);notify('Camisa #'+n+'!','ok');uh();
+      }}))
+    );
+  } else {
+    G.shirtNumber=R(15,35);
+  }
+}
 
 function saveGame(){localStorage.setItem('fs2',JSON.stringify(G));notify('Salvo!','ok')}
 function loadGame(){const d=localStorage.getItem('fs2');if(d){G=JSON.parse(d);showScreen('game-screen');buildSidebar();uh();switchTab('news');notify('Carregado!','ok')}}
