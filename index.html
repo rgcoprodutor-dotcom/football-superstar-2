@@ -58,9 +58,23 @@ h1,h2,h3,h4{font-family:'Oswald',sans-serif;text-transform:uppercase}
 .mh .sc{font-family:'Oswald',sans-serif;font-size:2.8rem;color:var(--gold)}
 .ml{background:var(--sec);border:1px solid var(--brd);padding:14px;max-height:350px;overflow-y:auto;font-size:.85rem;line-height:1.7}
 .ml .goal{color:var(--green);font-weight:700}.ml .miss{color:var(--red)}.ml .action{color:var(--blue)}.ml .event{color:var(--orange)}.ml .scout{color:#e0a0ff;font-style:italic}
-.pitch{background:linear-gradient(180deg,#1a472a,#2d6b3f,#1a472a);border:2px solid #fff3;padding:18px;text-align:center;margin:10px 0;border-radius:8px;min-height:100px}
-.pitch .sit{font-size:1.05rem;color:#fff;margin-bottom:6px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
-.pitch .ctx{font-size:.82rem;color:#cfc;opacity:.8}
+.pitch-wrap{margin:10px 0}
+.pitch-top{background:linear-gradient(180deg,#1a472a 0%,#2d6b3f 50%,#1a472a 100%);border:2px solid #fff3;border-radius:8px;position:relative;width:100%;aspect-ratio:2/1.1;max-height:280px;overflow:hidden}
+.pitch-lines{position:absolute;inset:0;pointer-events:none}
+.pitch-lines .mid-line{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,.2)}
+.pitch-lines .mid-circle{position:absolute;left:50%;top:50%;width:60px;height:60px;border:1px solid rgba(255,255,255,.2);border-radius:50%;transform:translate(-50%,-50%)}
+.pitch-lines .box-l{position:absolute;left:0;top:20%;width:14%;height:60%;border:1px solid rgba(255,255,255,.2);border-left:none}
+.pitch-lines .box-r{position:absolute;right:0;top:20%;width:14%;height:60%;border:1px solid rgba(255,255,255,.2);border-right:none}
+.pitch-lines .goal-l{position:absolute;left:0;top:35%;width:5%;height:30%;border:1px solid rgba(255,255,255,.15);border-left:none}
+.pitch-lines .goal-r{position:absolute;right:0;top:35%;width:5%;height:30%;border:1px solid rgba(255,255,255,.15);border-right:none}
+.p-dot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,.6);transform:translate(-50%,-50%);transition:all .5s;font-size:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;text-shadow:0 1px 2px #000}
+.p-dot.team-a{background:#e74c3c;box-shadow:0 0 6px rgba(231,76,60,.5)}
+.p-dot.team-b{background:#3498db;box-shadow:0 0 6px rgba(52,152,219,.5)}
+.p-dot.me{background:var(--gold);box-shadow:0 0 12px rgba(226,183,20,.8);width:22px;height:22px;border:2px solid #fff;z-index:10}
+.p-dot.ball{background:#fff;width:12px;height:12px;border:1px solid #333;box-shadow:0 0 8px rgba(255,255,255,.6);z-index:11}
+.pitch-info{text-align:center;padding:10px;background:rgba(26,71,42,.6);border-radius:0 0 8px 8px;border:2px solid #fff3;border-top:none}
+.pitch-info .sit{font-size:1rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.pitch-info .ctx{font-size:.8rem;color:#cfc;opacity:.8;margin-top:3px}
 .mab{padding:10px 14px;background:var(--sec);border:2px solid var(--brd);color:var(--light);cursor:pointer;transition:all .25s;font-size:.88rem;flex:1;min-width:200px;text-align:left;position:relative}
 .mab:hover{border-color:var(--gold);background:rgba(226,183,20,.1);color:var(--gold)}
 .mab .at{font-family:'Oswald',sans-serif;color:var(--gold);font-size:.92rem}
@@ -654,9 +668,21 @@ function getActs(pos,sit){
 
 function rMatchAction(el){
   const m=G.curM,tg=m.tg+m.pg;
+  const sit=m._sit; // near, far, mid, def
+  // Gera posições dos jogadores baseado na situação
+  const pitch=genPitchPositions(sit,m.home);
   el.innerHTML=`<div class="mh"><div style="font-size:.82rem;color:var(--gold);margin-bottom:4px">${m.min}' — AO VIVO ${m.classico?'⭐':''}${m.scoutWatch?' 🔍':''}</div>
-    <div class="tms"><span class="tn">${m.home?G.p.club:m.opp}</span><span class="sc">${m.home?tg:m.og} - ${m.home?m.og:tg}</span><span class="tn">${m.home?m.opp:G.p.club}</span></div></div>
-    <div class="pitch"><div class="sit">${m._sd.d}</div><div class="ctx">${m._sd.c}</div></div>
+    <div class="tms"><span class="tn" style="color:${m.home?'var(--red)':'var(--blue)'}">● ${m.home?G.p.club:m.opp}</span><span class="sc">${m.home?tg:m.og} - ${m.home?m.og:tg}</span><span class="tn" style="color:${!m.home?'var(--red)':'var(--blue)'}">● ${m.home?m.opp:G.p.club}</span></div></div>
+    <div class="pitch-wrap">
+      <div class="pitch-top" id="pitch-field">
+        <div class="pitch-lines"><div class="mid-line"></div><div class="mid-circle"></div><div class="box-l"></div><div class="box-r"></div><div class="goal-l"></div><div class="goal-r"></div></div>
+        ${pitch.teamA.map(p=>`<div class="p-dot team-a" style="left:${p.x}%;top:${p.y}%"></div>`).join('')}
+        ${pitch.teamB.map(p=>`<div class="p-dot team-b" style="left:${p.x}%;top:${p.y}%"></div>`).join('')}
+        <div class="p-dot me" style="left:${pitch.me.x}%;top:${pitch.me.y}%" title="${G.p.name}">★</div>
+        <div class="p-dot ball" style="left:${pitch.ball.x}%;top:${pitch.ball.y}%"></div>
+      </div>
+      <div class="pitch-info"><div class="sit">${m._sd.d}</div><div class="ctx">${m._sd.c}</div></div>
+    </div>
     <div class="card"><h3>⚡ Escolha sua ação:</h3>
       <div style="display:flex;flex-direction:column;gap:8px">${m._acts.map((a,i)=>{
         const pct=calcPct(a.df,a.at);const pc=pct>=65?'pct-h':pct>=40?'pct-m':'pct-l';
@@ -665,13 +691,64 @@ function rMatchAction(el){
     <div class="ml">${m.log.map(l=>`<div class="${l.type}">${l.text}</div>`).join('')}</div>`;
 }
 
+// Gera posições dos jogadores no campo baseado na situação
+function genPitchPositions(sit,isHome){
+  // Time A = vermelho (nosso time), Time B = azul (adversário)
+  // Se é home, nosso time ataca pra direita. Se away, pra esquerda.
+  const atkDir=isHome?1:-1; // 1=direita, -1=esquerda
+  const teamA=[],teamB=[];
+  let me={x:50,y:50},ball={x:50,y:50};
+
+  // Goleiro do nosso time
+  teamA.push({x:isHome?4:96,y:50});
+  // Goleiro adversário
+  teamB.push({x:isHome?96:4,y:50});
+
+  if(sit==='near'){ // Ataque perto do gol
+    // Nosso time avançado
+    const atkX=isHome?78:22;
+    me={x:isHome?85:15,y:42+R(0,16)};
+    ball={x:me.x+(isHome?2:-2),y:me.y};
+    teamA.push({x:atkX-5,y:25},{x:atkX,y:65},{x:atkX-12,y:45},{x:atkX-20,y:35},{x:atkX-20,y:60});
+    teamA.push({x:isHome?40:60,y:30},{x:isHome?40:60,y:70},{x:isHome?30:70,y:50},{x:isHome?55:45,y:50});
+    // Defesa adversária recuada
+    teamB.push({x:isHome?88:12,y:30},{x:isHome?88:12,y:55},{x:isHome?90:10,y:45},{x:isHome?85:15,y:70});
+    teamB.push({x:isHome?75:25,y:40},{x:isHome?75:25,y:60},{x:isHome?65:35,y:50},{x:isHome?60:40,y:35},{x:isHome?60:40,y:65});
+  } else if(sit==='far'){ // Ataque longe
+    const midX=isHome?55:45;
+    me={x:midX,y:40+R(0,20)};
+    ball={x:me.x,y:me.y};
+    teamA.push({x:midX+10*(isHome?1:-1),y:20},{x:midX+10*(isHome?1:-1),y:75},{x:midX-5*(isHome?1:-1),y:50});
+    teamA.push({x:isHome?35:65,y:30},{x:isHome?35:65,y:70},{x:isHome?25:75,y:45},{x:isHome?25:75,y:55},{x:isHome?15:85,y:50});
+    teamB.push({x:isHome?70:30,y:35},{x:isHome?70:30,y:65},{x:isHome?80:20,y:45},{x:isHome?80:20,y:55});
+    teamB.push({x:isHome?60:40,y:25},{x:isHome?60:40,y:75},{x:isHome?55:45,y:48},{x:isHome?85:15,y:40},{x:isHome?85:15,y:60});
+  } else if(sit==='mid'){ // Meio campo
+    me={x:48+R(0,4),y:40+R(0,20)};
+    ball={x:me.x+R(-2,2),y:me.y+R(-2,2)};
+    teamA.push({x:isHome?45:55,y:25},{x:isHome?45:55,y:70},{x:isHome?38:62,y:45},{x:isHome?50:50,y:55});
+    teamA.push({x:isHome?25:75,y:35},{x:isHome?25:75,y:65},{x:isHome?15:85,y:50},{x:isHome?60:40,y:30},{x:isHome?60:40,y:70});
+    teamB.push({x:isHome?55:45,y:30},{x:isHome?55:45,y:65},{x:isHome?60:40,y:48},{x:isHome?52:48,y:50});
+    teamB.push({x:isHome?70:30,y:40},{x:isHome?70:30,y:60},{x:isHome?80:20,y:50},{x:isHome?45:55,y:45},{x:isHome?65:35,y:55});
+  } else { // Defesa
+    const defX=isHome?25:75;
+    me={x:defX,y:40+R(0,20)};
+    ball={x:defX+(isHome?5:-5),y:me.y+R(-5,5)};
+    teamA.push({x:defX+3,y:30},{x:defX+3,y:60},{x:defX-5*(isHome?1:-1),y:45},{x:isHome?35:65,y:50});
+    teamA.push({x:isHome?45:55,y:35},{x:isHome?45:55,y:65},{x:isHome?55:45,y:45},{x:isHome?55:45,y:55},{x:isHome?15:85,y:50});
+    // Adversário atacando
+    teamB.push({x:defX+(isHome?8:-8),y:35},{x:defX+(isHome?8:-8),y:55},{x:defX+(isHome?15:-15),y:45});
+    teamB.push({x:isHome?50:50,y:30},{x:isHome?50:50,y:70},{x:isHome?60:40,y:50},{x:isHome?70:30,y:40},{x:isHome?70:30,y:60},{x:isHome?85:15,y:50});
+  }
+  return{teamA,teamB,me,ball};
+}
+
 function doMA(i){
   const m=G.curM,a=m._acts[i];
   const ctx={home:m.home,strong:m.oppS>=75,weak:m.oppS<=45,pressure:m.min>=80};
   const r=roll(a.df,a.at,ctx);
   // Desabilita botões e mostra suspense no campo
   document.querySelectorAll('.mab').forEach(b=>{b.style.pointerEvents='none';b.style.opacity='.3'});
-  const pitchEl=document.querySelector('.pitch');
+  const pitchEl=document.querySelector('.pitch-info');
   if(pitchEl){pitchEl.innerHTML=`<div class="sit" style="animation:pulse .8s infinite">⚽ ${a.t.replace(/🎯|🌀|📐|💪|🛡️|🤯|🚀|🧠|🏃/g,'').trim()}...</div><div class="ctx" style="opacity:.6">Aguarde o resultado...</div>`}
   setTimeout(()=>{
     applyMatchAction(a,r,m);
