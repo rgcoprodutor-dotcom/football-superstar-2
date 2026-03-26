@@ -713,7 +713,7 @@ document.querySelectorAll('.posbtn').forEach(b=>{b.addEventListener('click',()=>
 
 function startGame(){const n=$('pname').value.trim()||'Alex Silva';if(!selPos){notify('Selecione posição!','err');return}init(n,selPos,$('pnat').value);showScreen('game-screen');buildSidebar();updateHUD();switchTab('news')}
 
-const TABS=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['calendar','📅','Calendário'],['match','⚽','Jogo'],['league','🏆','Tabela'],['scorers','🥇','Artilh.'],['selection','🇧🇷','Seleção'],['attributes','📊','Atributos'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
+const TABS=[['news','📰','Notícias'],['dashboard','🏠','Painel'],['actions','📋','Ações'],['calendar','📅','Calendário'],['match','⚽','Jogo'],['league','🏆','Tabela'],['scorers','🥇','Artilh.'],['selection','🇧🇷','Seleção'],['market','🔄','Mercado'],['attributes','📊','Atributos'],['agent','🕴️','Agente'],['relationships','🤝','Relações'],['finances','💰','Finanças'],['shop','🛒','Loja'],['achievements','🏅','Conquistas']];
 
 function buildSidebar(){
   $('sidebar').innerHTML=TABS.map(([t,i,l])=>`<div class="ni${t==='news'?' act':''}" data-t="${t}" onclick="switchTab('${t}')"><span class="ic">${i}</span>${l}</div>`).join('');
@@ -746,7 +746,7 @@ function switchTab(t){
   if(activeBtn)activeBtn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
   renderTab(t);
 }
-function renderTab(t){const m={dashboard:rDash,actions:rActions,attributes:rAttrs,match:rMatch,news:rNews,league:rLeague,scorers:rScorers,transfers:rTransfers,agent:rAgent,relationships:rRels,finances:rFin,shop:rShop,achievements:rAchs,calendar:rCalendar,selection:rSelection};if(m[t])m[t]($('ca'))}
+function renderTab(t){const m={dashboard:rDash,actions:rActions,attributes:rAttrs,match:rMatch,news:rNews,league:rLeague,scorers:rScorers,transfers:rTransfers,agent:rAgent,relationships:rRels,finances:rFin,shop:rShop,achievements:rAchs,calendar:rCalendar,selection:rSelection,market:rMarket};if(m[t])m[t]($('ca'))}
 function actionsLeft(){return G.wa-Object.values(G.au).filter(v=>v).length}
 
 // ===== PAINEL =====
@@ -1425,17 +1425,37 @@ function advWeek(){
   G.transferWindow=winOpen;
   if(winOpen){
     if(G.offers.length===0){
-      // Mid-window: só mesma liga ou inferior. End-window: qualquer.
       if(isEndWindowOpen())genOffers();
       else genOffersSameLeague();
+    }
+    // Gerar ofertas dos clubes que o jogador marcou interesse (wishlist)
+    if(G.wishlist&&G.wishlist.length>0){
+      G.wishlist.forEach(club=>{
+        if(G.offers.find(o=>o.club===club))return; // já tem oferta
+        const rum=G.marketRumors?G.marketRumors.find(r=>r.club===club):null;
+        if(!rum)return;
+        // Chance de virar oferta real: baseada na % do rumor + janela certa
+        const midOnly=isMidWindowOpen()&&rum.league===G.lk;
+        const endAny=isEndWindowOpen();
+        if(!midOnly&&!endAny)return;
+        if(R(1,100)<=rum.chance){
+          const lg=LEAGUES[rum.league];
+          G.offers.push({club:rum.club,str:rum.str,lk:rum.league,ln:rum.leagueName,country:rum.country,tier:lg.tier,wage:Math.round(rum.avgWage*(1+R(0,3))),sign:R(10000,300000)*(1+lg.tier*.3),len:R(52,208)});
+          G.news.unshift({headline:`📋 ${rum.club} faz proposta oficial por ${G.p.name}!`,body:'O agente confirmou o interesse mútuo.',hot:true});
+        }
+      });
     }
     if(G.offers.length>0&&R(1,100)<=40){
       G._eventQueue.push({type:'transfer',data:G.offers[0]});
     }
     if(G.week===17||G.week===36){
       G.news.unshift({headline:`📢 Janela de transferências ${G.week===17?'do meio do ano':'de fim de ano'} está ABERTA!`,body:`Clubes podem negociar jogadores ${G.week===17?'da mesma liga':'de qualquer liga'}.`,hot:true});
+      genMarketRumors(); // Atualiza rumores quando janela abre
     }
   }
+
+  // Atualizar rumores periodicamente
+  if(G.week%5===0)genMarketRumors();
 
   // Check braçadeira, camisa, cobranças
   checkCaptainAndRoles();
@@ -1799,6 +1819,129 @@ function offerShirtChoice(){
   } else {
     G.shirtNumber=R(15,35);
   }
+}
+
+// ===== ABA MERCADO DE TRANSFERÊNCIAS =====
+function rMarket(el){
+  const p=G.p,winOpen=isTransferWindowOpen();
+  const midWin=isMidWindowOpen(),endWin=isEndWindowOpen();
+
+  // Gera rumores de mercado se não existirem
+  if(!G.marketRumors||G.marketRumors.length===0)genMarketRumors();
+
+  // Desejos do jogador
+  if(!G.wishlist)G.wishlist=[];
+
+  el.innerHTML=`<div class="card"><h3>🔄 Mercado de Transferências</h3>
+    <div style="font-size:.85rem;color:#aaa;margin-bottom:12px">
+      <div>Clube atual: <b style="color:var(--gold)">${p.club}</b> (${LEAGUES[G.lk].name}) | Contrato: ${p.contract.wks} sem.</div>
+      <div>Janela: <b style="color:${winOpen?'var(--green)':'var(--red)'}">${winOpen?(midWin?'ABERTA — Meio do Ano (mesma liga)':'ABERTA — Fim de Ano (todas ligas)'):'FECHADA'}</b>
+      ${!winOpen?' | Próxima: semana '+(G.week<17?'17':'36'):''}</div>
+      <div>Reputação: ${'⭐'.repeat(Math.min(5,Math.floor(p.reputation/20)))} (${p.reputation}/100) | Geral: ${ovr()}</div>
+    </div>
+  </div>
+
+  <!-- PROPOSTAS OFICIAIS -->
+  ${G.offers.length>0?`<div class="card"><h3>📋 Propostas Oficiais</h3>
+    ${G.offers.map((o,i)=>`<div style="background:var(--sec);border:1px solid var(--green);padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div><b style="color:var(--gold)">${o.club}</b><div style="font-size:.78rem;color:#aaa">${o.ln} (${o.country}) | Força: ${o.str}</div></div>
+      <div style="text-align:right"><div style="color:var(--green);font-family:'Oswald'">${fm(o.wage)}/sem</div><div style="font-size:.75rem;color:#aaa">Luvas: ${fm(o.sign)}</div>
+      <div style="margin-top:4px"><button class="btn btn-g btn-sm" onclick="showTransferEvent(G.offers[${i}])">Negociar</button></div></div>
+    </div>`).join('')}</div>`:''}
+
+  <!-- RUMORES E INTERESSE -->
+  <div class="card"><h3>💬 Rumores e Interesse</h3>
+    <p style="font-size:.8rem;color:#888;margin-bottom:10px">Marque os clubes que te interessam — seu agente vai trabalhar para viabilizar a transferência.</p>
+    ${G.marketRumors.length>0?G.marketRumors.map((r,i)=>{
+      const onWish=G.wishlist.includes(r.club);
+      const pctColor=r.chance>=60?'var(--green)':r.chance>=30?'var(--gold)':'var(--red)';
+      const statusText=r.status==='scout'?'🔍 Olheiro observou':r.status==='rumor'?'💬 Rumor na mídia':r.status==='interesse'?'📞 Interesse oficial':'❓ Especulação';
+      return`<div style="background:var(--sec);border:1px solid ${onWish?'var(--gold)':'var(--brd)'};padding:10px 12px;margin-bottom:6px;${onWish?'box-shadow:0 0 8px rgba(226,183,20,.2)':''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+          <div style="flex:1;min-width:180px">
+            <div><b style="color:var(--gold)">${r.club}</b> <span style="font-size:.75rem;color:#888">(${r.leagueName})</span></div>
+            <div style="font-size:.78rem;color:#aaa">${r.country} | Força: ${r.str} | Salário médio: ${fm(r.avgWage)}/sem</div>
+            <div style="font-size:.78rem;margin-top:2px">${statusText}</div>
+          </div>
+          <div style="text-align:center;min-width:60px">
+            <div style="font-family:'Oswald';font-size:1.3rem;color:${pctColor}">${r.chance}%</div>
+            <div style="font-size:.65rem;color:#888">chance</div>
+          </div>
+          <div>
+            <button class="btn btn-sm ${onWish?'btn-r':'btn-g'}" onclick="toggleWish(${i})" style="font-size:.75rem">${onWish?'✅ Interessado':'☐ Tenho interesse'}</button>
+          </div>
+        </div>
+        ${onWish?'<div style="font-size:.75rem;color:var(--gold);margin-top:6px">🕴️ Seu agente está trabalhando nessa transferência...</div>':''}
+      </div>`}).join(''):'<p style="color:#666;font-size:.85rem">Nenhum rumor no momento. Jogue bem para atrair clubes!</p>'}
+  </div>
+
+  <!-- INTERESSE DO JOGADOR -->
+  ${G.wishlist.length>0?`<div class="card"><h3>⭐ Seus Desejos (${G.wishlist.length})</h3>
+    <p style="font-size:.8rem;color:#888;margin-bottom:8px">Clubes que você sinalizou interesse. Na janela de transferência, seu agente priorizará essas negociações.</p>
+    ${G.wishlist.map(club=>{
+      const r=G.marketRumors.find(x=>x.club===club);
+      return r?`<div style="font-size:.85rem;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)">⭐ <b style="color:var(--gold)">${r.club}</b> (${r.leagueName}) — ${r.chance}% chance</div>`:'';
+    }).join('')}
+  </div>`:''}`;
+}
+
+function genMarketRumors(){
+  G.marketRumors=[];
+  const o=ovr(),rep=G.p.reputation,ct=LEAGUES[G.lk].tier;
+
+  // Gera rumores baseados em reputação, overall e olheiros
+  // 1. Olheiros que já observaram → alta chance
+  G.p.scoutInterest.forEach(si=>{
+    const lg=LEAGUES[si.league];if(!lg)return;
+    const team=lg.teams.find(t=>t.n===si.club);
+    const chance=cl(Math.min(90,20+si.times*15+Math.floor(rep/5)),5,90);
+    G.marketRumors.push({club:si.club,league:si.league,leagueName:lg.name,country:lg.country,str:team?team.s:60,avgWage:lg.wage,chance,status:'scout'});
+  });
+
+  // 2. Rumores da mídia (baseado em desempenho)
+  if(rep>=20){
+    const possibleLeagues=LO.filter(k=>{const t=LEAGUES[k].tier;return t>=ct&&t<=ct+2});
+    const numRumors=rep>=60?R(3,5):rep>=35?R(2,4):R(1,2);
+    for(let i=0;i<numRumors;i++){
+      const lk=pick(possibleLeagues);if(!lk)continue;
+      const lg=LEAGUES[lk];
+      const team=pick(lg.teams.filter(t=>t.n!==G.p.club&&Math.abs(t.s-o)<25));
+      if(!team||G.marketRumors.find(r=>r.club===team.n))continue;
+      const tierDiff=lg.tier-ct;
+      const baseChance=tierDiff<=0?40:tierDiff===1?25:15;
+      const chance=cl(baseChance+Math.floor(rep/4)-tierDiff*10+R(-5,10),5,75);
+      G.marketRumors.push({club:team.n,league:lk,leagueName:lg.name,country:lg.country,str:team.s,avgWage:lg.wage,chance,status:R(1,100)<=50?'rumor':'interesse'});
+    }
+  }
+
+  // 3. Especulações (times grandes se o jogador é bom)
+  if(rep>=45){
+    const bigTeams=[{n:'Flamengo',lk:'serieA'},{n:'Palmeiras',lk:'serieA'},{n:'Real Madrid',lk:'laliga'},{n:'Barcelona',lk:'laliga'},{n:'PSG',lk:'ligue1'},{n:'Man City',lk:'premier'},{n:'Liverpool',lk:'premier'},{n:'Bayern Munich',lk:'laliga'},{n:'Juventus',lk:'serieA_ita'},{n:'Inter',lk:'serieA_ita'}];
+    const specs=bigTeams.filter(t=>t.n!==G.p.club&&!G.marketRumors.find(r=>r.club===t.n)&&LEAGUES[t.lk].tier>=ct);
+    for(let i=0;i<Math.min(2,specs.length);i++){
+      const t=pick(specs);const lg=LEAGUES[t.lk];
+      const chance=cl(5+Math.floor(rep/8)+R(0,10),3,40);
+      G.marketRumors.push({club:t.n,league:t.lk,leagueName:lg.name,country:lg.country,str:lg.teams.find(x=>x.n===t.n)?.s||80,avgWage:lg.wage,chance,status:'rumor'});
+    }
+  }
+
+  G.marketRumors.sort((a,b)=>b.chance-a.chance);
+}
+
+function toggleWish(idx){
+  const r=G.marketRumors[idx];if(!r)return;
+  const i=G.wishlist.indexOf(r.club);
+  if(i>=0){
+    G.wishlist.splice(i,1);
+    notify('Retirou interesse no '+r.club);
+  } else {
+    G.wishlist.push(r.club);
+    r.chance=cl(r.chance+5,0,95); // Sinalizar interesse aumenta um pouco a chance
+    G.p.rel.fans=cl(G.p.rel.fans-R(1,3),0,100); // Torcida não gosta muito
+    notify('Agente vai trabalhar na transferência pro '+r.club+'!','ok');
+    G.news.unshift({headline:`📰 ${G.p.name} teria interesse em jogar no ${r.club}`,body:'Agente do jogador teria sinalizado abertura para negociação.',hot:true});
+  }
+  uh();switchTab('market');
 }
 
 function saveGame(){localStorage.setItem('fs2',JSON.stringify(G));notify('Salvo!','ok')}
