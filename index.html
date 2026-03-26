@@ -409,17 +409,26 @@ function init(name,pos,nat){
 }
 
 // Gera calendário da temporada
-// Copas nacionais por liga
+// Competições por liga — critérios reais de classificação
 const CUPS={
-  serieC:{copa:'Copa do Brasil',intl:null,intl2:null},
-  serieB:{copa:'Copa do Brasil',intl:null,intl2:null},
-  serieA:{copa:'Copa do Brasil',intl:'Libertadores',intl2:'Sulamericana'},
-  argentina:{copa:'Copa Argentina',intl:'Libertadores',intl2:'Sulamericana'},
-  portugal:{copa:'Taça de Portugal',intl:'Champions League',intl2:'Liga Europa'},
-  ligue1:{copa:'Coupe de France',intl:'Champions League',intl2:'Liga Europa'},
-  serieA_ita:{copa:'Coppa Italia',intl:'Champions League',intl2:'Liga Europa'},
-  laliga:{copa:'Copa del Rey',intl:'Champions League',intl2:'Liga Europa'},
-  premier:{copa:'FA Cup',intl:'Champions League',intl2:'Liga Europa'}
+  // BRASIL Série C: só Copa do Brasil (entra na 1ª fase)
+  serieC:{copa:'Copa do Brasil',copaEntry:1,intl:null,intl2:null,intlSlots:0,intl2Slots:0},
+  // BRASIL Série B: Copa do Brasil (entra na 2ª fase)
+  serieB:{copa:'Copa do Brasil',copaEntry:2,intl:null,intl2:null,intlSlots:0,intl2Slots:0},
+  // BRASIL Série A: Copa do Brasil + Libertadores (top 4 + campeão CdB) + Sulamericana (5º-8º)
+  serieA:{copa:'Copa do Brasil',copaEntry:3,intl:'Libertadores',intl2:'Sulamericana',intlSlots:4,intl2Slots:4},
+  // ARGENTINA: Copa Argentina + Libertadores (top 4) + Sulamericana (5º-8º)
+  argentina:{copa:'Copa Argentina',copaEntry:2,intl:'Libertadores',intl2:'Sulamericana',intlSlots:4,intl2Slots:4},
+  // PORTUGAL: Taça de Portugal + Champions (1º-2º) + Europa League (3º-4º)
+  portugal:{copa:'Taça de Portugal',copaEntry:3,intl:'Champions League',intl2:'Liga Europa',intlSlots:2,intl2Slots:2},
+  // FRANÇA: Coupe de France + Champions (1º-3º) + Europa League (4º-5º)
+  ligue1:{copa:'Coupe de France',copaEntry:3,intl:'Champions League',intl2:'Liga Europa',intlSlots:3,intl2Slots:2},
+  // ITÁLIA: Coppa Italia + Champions (1º-4º) + Europa League (5º-6º)
+  serieA_ita:{copa:'Coppa Italia',copaEntry:3,intl:'Champions League',intl2:'Liga Europa',intlSlots:4,intl2Slots:2},
+  // ESPANHA: Copa del Rey + Champions (1º-4º) + Europa League (5º-6º)
+  laliga:{copa:'Copa del Rey',copaEntry:3,intl:'Champions League',intl2:'Liga Europa',intlSlots:4,intl2Slots:2},
+  // INGLATERRA: FA Cup + Champions (1º-4º) + Europa League (5º-6º + campeão FA Cup)
+  premier:{copa:'FA Cup',copaEntry:3,intl:'Champions League',intl2:'Liga Europa',intlSlots:4,intl2Slots:2}
 };
 
 // Times famosos por competição continental
@@ -437,59 +446,103 @@ function genCalendar(){
   G.calendar=[];
   const teams=LEAGUES[G.lk].teams;
   const myIdx=teams.findIndex(t=>t.n===G.p.club);
-  const cups=CUPS[G.lk]||{copa:'Copa Nacional',intl:null,intl2:null};
-  const bigTeams=['Flamengo','Palmeiras','Corinthians','São Paulo','Vasco','Botafogo','Grêmio','Internacional','Cruzeiro','Atlético-MG','Santos','River Plate','Boca Juniors','Real Madrid','Barcelona','Man City','Liverpool','Juventus','Inter','Milan','PSG','Benfica','Porto'];
+  const cups=CUPS[G.lk]||{copa:'Copa Nacional',copaEntry:1,intl:null,intl2:null,intlSlots:0,intl2Slots:0};
+  const bigTeams=['Flamengo','Palmeiras','Corinthians','São Paulo','Vasco','Botafogo','Grêmio','Internacional','Cruzeiro','Atlético-MG','Santos','River Plate','Boca Juniors','Real Madrid','Barcelona','Man City','Liverpool','Juventus','Inter','Milan','PSG','Benfica','Porto','Arsenal','Chelsea','Napoli','Bayern Munich'];
 
-  // Liga — jogos a cada 1-2 semanas
-  const leagueWeeks=[];
-  for(let w=1;w<=38;w++){if(w%1===0)leagueWeeks.push(w)} // todas semanas podem ter jogo
-  leagueWeeks.forEach((w,i)=>{
-    const oppIdx=(myIdx+i+1)%teams.length;
-    if(oppIdx===myIdx)return;
+  // ===== LIGA — 38 rodadas (turno e returno) =====
+  for(let w=1;w<=38;w++){
+    const oppIdx=(myIdx+ (w<=19? w : w-19) )%teams.length;
+    if(oppIdx===myIdx)continue;
     const opp=teams[oppIdx];
-    G.calendar.push({week:w,comp:'liga',compName:LEAGUES[G.lk].name,opp:opp.n,oppS:opp.s,home:w%2===0,classico:bigTeams.includes(opp.n),played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
-  });
+    const home=w<=19?(w%2===0):(w%2!==0); // turno/returno inverte mando
+    G.calendar.push({week:w,comp:'liga',compName:LEAGUES[G.lk].name,opp:opp.n,oppS:opp.s,home,classico:bigTeams.includes(opp.n),played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+  }
 
-  // Copa Nacional — fases eliminatórias
-  const copaRounds=[
-    {week:4,fase:'1ª Fase',oppS:R(25,45)},
-    {week:8,fase:'2ª Fase',oppS:R(30,50)},
-    {week:14,fase:'Oitavas',oppS:R(40,60)},
-    {week:20,fase:'Quartas',oppS:R(50,70)},
-    {week:28,fase:'Semi',oppS:R(60,80)},
-    {week:34,fase:'FINAL',oppS:R(65,85)},
+  // ===== COPA NACIONAL — formato realista por divisão =====
+  const entry=cups.copaEntry||1;
+  // Série C: 1ªFase→2ªFase→3ªFase→Oitavas→Quartas→Semi→Final
+  // Série B: 2ªFase→3ªFase→Oitavas→Quartas→Semi→Final
+  // Série A / Europa: 3ªFase→Oitavas→Quartas→Semi→Final
+  const allCopaRounds=[
+    {fase:'1ª Fase (ida)',week:3,oppRange:[20,35]},{fase:'1ª Fase (volta)',week:4,oppRange:[20,35]},
+    {fase:'2ª Fase (ida)',week:7,oppRange:[28,45]},{fase:'2ª Fase (volta)',week:8,oppRange:[28,45]},
+    {fase:'3ª Fase (ida)',week:11,oppRange:[35,55]},{fase:'3ª Fase (volta)',week:12,oppRange:[35,55]},
+    {fase:'Oitavas (ida)',week:15,oppRange:[45,65]},{fase:'Oitavas (volta)',week:16,oppRange:[45,65]},
+    {fase:'Quartas (ida)',week:21,oppRange:[55,75]},{fase:'Quartas (volta)',week:22,oppRange:[55,75]},
+    {fase:'Semi (ida)',week:27,oppRange:[60,82]},{fase:'Semi (volta)',week:28,oppRange:[60,82]},
+    {fase:'FINAL',week:35,oppRange:[65,88]},
   ];
-  if(!G._copaElim)G._copaElim=false;
+  // Filtra fases baseado na entrada
+  const startIdx=entry===1?0:entry===2?2:4;
+  const copaRounds=allCopaRounds.slice(startIdx);
+  // Gera adversários de todas as ligas brasileiras (ou da mesma região)
+  const allLeagueTeams=Object.values(LEAGUES).filter(l=>l.country===LEAGUES[G.lk].country).flatMap(l=>l.teams);
   copaRounds.forEach(r=>{
-    const oppTeam=pick(LEAGUES[G.lk].teams.filter(t=>t.n!==G.p.club));
-    G.calendar.push({week:r.week,comp:'copa',compName:cups.copa,opp:oppTeam?oppTeam.n:'Adversário',oppS:r.oppS,home:R(0,1)===0,classico:false,fase:r.fase,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+    const oppPool=allLeagueTeams.filter(t=>t.n!==G.p.club&&t.s>=r.oppRange[0]&&t.s<=r.oppRange[1]);
+    const opp=oppPool.length>0?pick(oppPool):{n:'Adversário',s:R(r.oppRange[0],r.oppRange[1])};
+    G.calendar.push({week:r.week,comp:'copa',compName:cups.copa,opp:opp.n,oppS:opp.s||R(r.oppRange[0],r.oppRange[1]),home:R(0,1)===0,classico:bigTeams.includes(opp.n),fase:r.fase,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
   });
 
-  // Continental — Libertadores/Champions ou Sulamericana/Europa League
-  // Só se o time tem prestígio suficiente (top 8 da liga = intl principal, top 12 = intl2)
+  // ===== CONTINENTAL — critérios reais =====
+  // Posição do time na liga (por força, como proxy da temporada anterior)
   const teamRank=teams.slice().sort((a,b)=>b.s-a.s).findIndex(t=>t.n===G.p.club)+1;
-  let contComp=null,contTeams=[];
-  if(teamRank<=6&&cups.intl){
+  let contComp=null,contTeams=[],contFormat=null;
+
+  if(cups.intl&&teamRank<=cups.intlSlots){
     contComp=cups.intl;
     contTeams=cups.intl==='Libertadores'?CONTINENTAL_TEAMS.libertadores:CONTINENTAL_TEAMS.champions;
-  } else if(teamRank<=12&&cups.intl2){
+    contFormat='main';
+  } else if(cups.intl2&&teamRank<=cups.intlSlots+cups.intl2Slots){
     contComp=cups.intl2;
     contTeams=cups.intl2==='Sulamericana'?CONTINENTAL_TEAMS.sulamericana:CONTINENTAL_TEAMS.europa;
+    contFormat='secondary';
   }
 
   if(contComp){
     G._continental=contComp;
-    // Fase de grupos: semanas 6, 10, 12, 16, 18, 22
-    const groupWeeks=[6,10,12,16,18,22];
-    groupWeeks.forEach((w,i)=>{
-      const opp=pick(contTeams.filter(t=>t!==G.p.club));
-      G.calendar.push({week:w,comp:'continental',compName:contComp,opp,oppS:R(55,85),home:i%2===0,classico:true,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
-    });
-    // Mata-mata: oitavas s24, quartas s28, semi s32, final s36
-    [{week:24,fase:'Oitavas'},{week:29,fase:'Quartas'},{week:33,fase:'Semi'},{week:37,fase:'FINAL'}].forEach(r=>{
-      const opp=pick(contTeams.filter(t=>t!==G.p.club));
-      G.calendar.push({week:r.week,comp:'continental',compName:contComp,opp,oppS:R(65,90),home:R(0,1)===0,classico:true,fase:r.fase,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
-    });
+    G._contQualified=true;
+
+    if(contComp==='Libertadores'){
+      // LIBERTADORES formato real: Fase de Grupos (6 jogos) + Oitavas + Quartas + Semi + Final
+      const grpOpps=[];for(let i=0;i<3;i++)grpOpps.push(pick(contTeams.filter(t=>t!==G.p.club&&!grpOpps.includes(t))));
+      // Grupos: ida e volta contra 3 adversários = 6 jogos
+      [{w:5,h:true,i:0},{w:7,h:false,i:1},{w:9,h:true,i:2},{w:13,h:false,i:0},{w:15,h:true,i:1},{w:19,h:false,i:2}].forEach(g=>{
+        G.calendar.push({week:g.w,comp:'continental',compName:'Libertadores',opp:grpOpps[g.i]||pick(contTeams),oppS:R(60,82),home:g.h,classico:true,fase:'Fase de Grupos',played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+      // Mata-mata: ida e volta
+      [{w:23,f:'Oitavas (ida)'},{w:24,f:'Oitavas (volta)'},{w:29,f:'Quartas (ida)'},{w:30,f:'Quartas (volta)'},{w:33,f:'Semi (ida)'},{w:34,f:'Semi (volta)'},{w:37,f:'FINAL'}].forEach(r=>{
+        G.calendar.push({week:r.w,comp:'continental',compName:'Libertadores',opp:pick(contTeams.filter(t=>t!==G.p.club)),oppS:R(68,90),home:r.f.includes('ida')||r.f==='FINAL'?R(0,1)===0:R(0,1)===0,classico:true,fase:r.f,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+    } else if(contComp==='Sulamericana'){
+      // SULAMERICANA: Fase de Grupos (6 jogos) + Oitavas + Quartas + Semi + Final
+      const grpOpps=[];for(let i=0;i<3;i++)grpOpps.push(pick(contTeams.filter(t=>t!==G.p.club&&!grpOpps.includes(t))));
+      [{w:5,h:true,i:0},{w:7,h:false,i:1},{w:9,h:true,i:2},{w:13,h:false,i:0},{w:15,h:true,i:1},{w:19,h:false,i:2}].forEach(g=>{
+        G.calendar.push({week:g.w,comp:'continental',compName:'Sulamericana',opp:grpOpps[g.i]||pick(contTeams),oppS:R(48,70),home:g.h,classico:false,fase:'Fase de Grupos',played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+      [{w:23,f:'Oitavas (ida)'},{w:24,f:'Oitavas (volta)'},{w:29,f:'Quartas (ida)'},{w:30,f:'Quartas (volta)'},{w:33,f:'Semi (ida)'},{w:34,f:'Semi (volta)'},{w:37,f:'FINAL'}].forEach(r=>{
+        G.calendar.push({week:r.w,comp:'continental',compName:'Sulamericana',opp:pick(contTeams.filter(t=>t!==G.p.club)),oppS:R(55,78),home:R(0,1)===0,classico:false,fase:r.f,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+    } else if(contComp==='Champions League'){
+      // CHAMPIONS LEAGUE formato novo: Fase de Liga (8 jogos) + Oitavas + Quartas + Semi + Final
+      const clOpps=[];for(let i=0;i<8;i++)clOpps.push(pick(contTeams.filter(t=>t!==G.p.club)));
+      [{w:4,i:0},{w:6,i:1},{w:10,i:2},{w:12,i:3},{w:16,i:4},{w:18,i:5},{w:22,i:6},{w:24,i:7}].forEach(g=>{
+        G.calendar.push({week:g.w,comp:'continental',compName:'Champions League',opp:clOpps[g.i],oppS:R(70,92),home:g.i%2===0,classico:true,fase:'Fase de Liga',played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+      [{w:27,f:'Oitavas (ida)'},{w:28,f:'Oitavas (volta)'},{w:31,f:'Quartas (ida)'},{w:32,f:'Quartas (volta)'},{w:35,f:'Semi (ida)'},{w:36,f:'Semi (volta)'},{w:38,f:'FINAL'}].forEach(r=>{
+        G.calendar.push({week:r.w,comp:'continental',compName:'Champions League',opp:pick(contTeams.filter(t=>t!==G.p.club)),oppS:R(78,94),home:R(0,1)===0,classico:true,fase:r.f,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+    } else if(contComp==='Liga Europa'){
+      // EUROPA LEAGUE: Fase de Liga (6 jogos) + Oitavas + Quartas + Semi + Final
+      const elOpps=[];for(let i=0;i<6;i++)elOpps.push(pick(contTeams.filter(t=>t!==G.p.club)));
+      [{w:4,i:0},{w:8,i:1},{w:12,i:2},{w:16,i:3},{w:20,i:4},{w:24,i:5}].forEach(g=>{
+        G.calendar.push({week:g.w,comp:'continental',compName:'Liga Europa',opp:elOpps[g.i],oppS:R(58,78),home:g.i%2===0,classico:false,fase:'Fase de Liga',played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+      [{w:27,f:'Oitavas (ida)'},{w:28,f:'Oitavas (volta)'},{w:31,f:'Quartas (ida)'},{w:32,f:'Quartas (volta)'},{w:35,f:'Semi (ida)'},{w:36,f:'Semi (volta)'},{w:38,f:'FINAL'}].forEach(r=>{
+        G.calendar.push({week:r.w,comp:'continental',compName:'Liga Europa',opp:pick(contTeams.filter(t=>t!==G.p.club)),oppS:R(62,82),home:R(0,1)===0,classico:false,fase:r.f,played:false,result:null,playerGoals:0,playerAssists:0,rating:0});
+      });
+    }
+  } else {
+    G._continental=null;G._contQualified=false;
   }
 
   // Ordenar por semana
